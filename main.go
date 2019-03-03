@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"strconv"
 	"syscall"
-	"time"
 
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
+	"gopkg.in/djherbis/times.v1"
 )
 
 var (
@@ -40,7 +40,7 @@ func CurrentDir() string {
 	return filepath.Dir(exe)
 }
 
-// CurrentEntries return current entries
+// Entries return current entries
 func Entries(path string) []Entry {
 	files, err := ioutil.ReadDir(path)
 
@@ -52,21 +52,33 @@ func Entries(path string) []Entry {
 	var access, change, create, perm, owner, group string
 
 	for _, file := range files {
+		t, err := times.Stat(file.Name())
+		if err != nil {
+			panic(err)
+		}
+
 		if stat, ok := file.Sys().(*syscall.Stat_t); ok {
-			access = time.Unix(stat.Atimespec.Unix()).Format(dateFmt)
-			change = time.Unix(stat.Ctimespec.Unix()).Format(dateFmt)
-			create = time.Unix(stat.Birthtimespec.Unix()).Format(dateFmt)
+			access = t.AccessTime().Format(dateFmt)
+			change = file.ModTime().Format(dateFmt)
+			if t.HasBirthTime() {
+				create = t.BirthTime().Format(dateFmt)
+			}
 			perm = file.Mode().String()
-			u, err := user.LookupId(strconv.Itoa(int(stat.Uid)))
+
+			uid := strconv.Itoa(int(stat.Uid))
+			u, err := user.LookupId(uid)
 			if err != nil {
-				panic(err)
+				owner = uid
+			} else {
+				owner = u.Username
 			}
-			owner = u.Username
-			g, err := user.LookupGroupId(strconv.Itoa(int(stat.Gid)))
+			gid := strconv.Itoa(int(stat.Gid))
+			g, err := user.LookupGroupId(gid)
 			if err != nil {
-				panic(err)
+				group = gid
+			} else {
+				group = g.Name
 			}
-			group = g.Name
 		}
 
 		entries = append(entries, Entry{
@@ -86,6 +98,7 @@ func Entries(path string) []Entry {
 	return entries
 }
 
+// SetHeader set table header
 func SetHeader(table *tview.Table, headers []string) {
 	for k, v := range headers {
 		table.SetCell(0, k, &tview.TableCell{
@@ -110,6 +123,9 @@ func main() {
 		"Permission",
 		"Owner",
 		"Group",
+		//"Create",
+		//"Access",
+		//"Change",
 	}
 
 	SetHeader(table, headers)
@@ -121,12 +137,18 @@ func main() {
 			table.SetCell(k+1, 2, tview.NewTableCell(entry.Permission).SetTextColor(tcell.ColorDarkCyan))
 			table.SetCell(k+1, 3, tview.NewTableCell(entry.Owner).SetTextColor(tcell.ColorDarkCyan))
 			table.SetCell(k+1, 4, tview.NewTableCell(entry.Group).SetTextColor(tcell.ColorDarkCyan))
+			//table.SetCell(k+1, 5, tview.NewTableCell(entry.Create).SetTextColor(tcell.ColorDarkCyan))
+			//table.SetCell(k+1, 6, tview.NewTableCell(entry.Access).SetTextColor(tcell.ColorDarkCyan))
+			//table.SetCell(k+1, 7, tview.NewTableCell(entry.Change).SetTextColor(tcell.ColorDarkCyan))
 		} else {
 			table.SetCell(k+1, 0, tview.NewTableCell(entry.Name))
 			table.SetCell(k+1, 1, tview.NewTableCell(entry.Size))
 			table.SetCell(k+1, 2, tview.NewTableCell(entry.Permission))
 			table.SetCell(k+1, 3, tview.NewTableCell(entry.Owner))
 			table.SetCell(k+1, 4, tview.NewTableCell(entry.Group))
+			//table.SetCell(k+1, 5, tview.NewTableCell(entry.Create))
+			//table.SetCell(k+1, 6, tview.NewTableCell(entry.Access))
+			//table.SetCell(k+1, 7, tview.NewTableCell(entry.Change))
 		}
 	}
 
@@ -139,7 +161,7 @@ func main() {
 		table.GetCell(row, column).SetText("gorilla")
 	})
 
-	grid := tview.NewGrid().SetColumns(0, 0)
+	grid := tview.NewGrid()
 	grid.AddItem(table, 0, 0, 1, 1, 0, 0, true)
 
 	if err := app.SetRoot(grid, true).Run(); err != nil {
