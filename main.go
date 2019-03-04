@@ -161,8 +161,11 @@ func main() {
 		table.GetCell(row, column).SetText("gorilla")
 	})
 
-	grid := tview.NewGrid()
-	grid.AddItem(table, 0, 0, 1, 1, 0, 0, true)
+	currentPath := tview.NewTextView().SetText(CurrentDir())
+
+	grid := tview.NewGrid().SetRows(1, 0)
+	grid.AddItem(table, 1, 0, 1, 1, 0, 0, true)
+	grid.AddItem(currentPath, 0, 0, 1, 1, 0, 0, true)
 
 	if err := app.SetRoot(grid, true).Run(); err != nil {
 		panic(err)
