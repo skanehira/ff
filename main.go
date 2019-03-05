@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/user"
@@ -31,38 +32,32 @@ type Entry struct {
 	IsDir      bool
 }
 
-// CurrentDir return current dir path
-func CurrentDir() string {
-	exe, err := os.Executable()
-	if err != nil {
-		panic(err)
-	}
-	return filepath.Dir(exe)
-}
-
 // Entries return current entries
 func Entries(path string) []Entry {
 	files, err := ioutil.ReadDir(path)
-
 	if err != nil {
-		panic(err)
+		return []Entry{}
 	}
 
 	var entries []Entry
 	var access, change, create, perm, owner, group string
 
 	for _, file := range files {
-		t, err := times.Stat(file.Name())
+		// get file times
+		t, err := times.Stat(filepath.Join(path, file.Name()))
 		if err != nil {
-			panic(err)
+			// TODO write logger
+			continue
 		}
 
+		access = t.AccessTime().Format(dateFmt)
+		change = file.ModTime().Format(dateFmt)
+		if t.HasBirthTime() {
+			create = t.BirthTime().Format(dateFmt)
+		}
+
+		// get file permission, owner, group
 		if stat, ok := file.Sys().(*syscall.Stat_t); ok {
-			access = t.AccessTime().Format(dateFmt)
-			change = file.ModTime().Format(dateFmt)
-			if t.HasBirthTime() {
-				create = t.BirthTime().Format(dateFmt)
-			}
 			perm = file.Mode().String()
 
 			uid := strconv.Itoa(int(stat.Uid))
@@ -81,6 +76,7 @@ func Entries(path string) []Entry {
 			}
 		}
 
+		// create entriey
 		entries = append(entries, Entry{
 			Name:       file.Name(),
 			Access:     access,
@@ -99,7 +95,16 @@ func Entries(path string) []Entry {
 }
 
 // SetHeader set table header
-func SetHeader(table *tview.Table, headers []string) {
+func SetHeader(table *tview.Table) {
+	headers := []string{"Name",
+		"Size",
+		"Permission",
+		"Owner",
+		"Group",
+		//"Create",
+		//"Access",
+		//"Change",
+	}
 	for k, v := range headers {
 		table.SetCell(0, k, &tview.TableCell{
 			Text:            v,
@@ -111,25 +116,9 @@ func SetHeader(table *tview.Table, headers []string) {
 	}
 }
 
-func main() {
-	app := tview.NewApplication()
-	table := tview.NewTable().SetSelectable(true, false)
-	//table.SetBorder(true)
-
-	entries := Entries(".")
-
-	headers := []string{"Name",
-		"Size",
-		"Permission",
-		"Owner",
-		"Group",
-		//"Create",
-		//"Access",
-		//"Change",
-	}
-
-	SetHeader(table, headers)
-
+func SetEntries(table *tview.Table, entries []Entry) {
+	table = table.Clear()
+	SetHeader(table)
 	for k, entry := range entries {
 		if entry.IsDir {
 			table.SetCell(k+1, 0, tview.NewTableCell(entry.Name).SetTextColor(tcell.ColorDarkCyan))
@@ -151,23 +140,57 @@ func main() {
 			//table.SetCell(k+1, 7, tview.NewTableCell(entry.Change))
 		}
 	}
+}
+
+func run() (int, error) {
+	app := tview.NewApplication()
+	table := tview.NewTable().SetSelectable(true, false)
+
+	entries := Entries(".")
+
+	SetEntries(table, entries)
 
 	table.SetDoneFunc(func(key tcell.Key) {
 		if key == tcell.KeyEscape {
 			app.Stop()
 		}
 	}).SetSelectedFunc(func(row int, column int) {
-		// TODO
 		table.GetCell(row, column).SetText("gorilla")
 	})
 
-	currentPath := tview.NewTextView().SetText(CurrentDir())
+	// get current path
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return 1, err
+	}
+
+	inputPath := tview.NewInputField().SetText(currentDir)
+
+	inputPath.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEnter {
+			// specified file path
+			SetEntries(table, Entries(inputPath.GetText()))
+		}
+	})
 
 	grid := tview.NewGrid().SetRows(1, 0)
-	grid.AddItem(table, 1, 0, 1, 1, 0, 0, true)
-	grid.AddItem(currentPath, 0, 0, 1, 1, 0, 0, true)
+	grid.AddItem(inputPath, 0, 0, 1, 1, 0, 0, true)
+	grid.AddItem(table, 1, 0, 2, 2, 0, 0, false)
 
 	if err := app.SetRoot(grid, true).Run(); err != nil {
-		panic(err)
+		app.Stop()
+		return 1, err
 	}
+
+	return 0, nil
+}
+
+func main() {
+	exitCode, err := run()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(exitCode)
+	}
+
+	os.Exit(exitCode)
 }
