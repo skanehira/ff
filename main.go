@@ -126,18 +126,12 @@ func SetEntries(table *tview.Table, entries []Entry) {
 			table.SetCell(k+1, 2, tview.NewTableCell(entry.Permission).SetTextColor(tcell.ColorDarkCyan))
 			table.SetCell(k+1, 3, tview.NewTableCell(entry.Owner).SetTextColor(tcell.ColorDarkCyan))
 			table.SetCell(k+1, 4, tview.NewTableCell(entry.Group).SetTextColor(tcell.ColorDarkCyan))
-			//table.SetCell(k+1, 5, tview.NewTableCell(entry.Create).SetTextColor(tcell.ColorDarkCyan))
-			//table.SetCell(k+1, 6, tview.NewTableCell(entry.Access).SetTextColor(tcell.ColorDarkCyan))
-			//table.SetCell(k+1, 7, tview.NewTableCell(entry.Change).SetTextColor(tcell.ColorDarkCyan))
 		} else {
 			table.SetCell(k+1, 0, tview.NewTableCell(entry.Name))
 			table.SetCell(k+1, 1, tview.NewTableCell(entry.Size))
 			table.SetCell(k+1, 2, tview.NewTableCell(entry.Permission))
 			table.SetCell(k+1, 3, tview.NewTableCell(entry.Owner))
 			table.SetCell(k+1, 4, tview.NewTableCell(entry.Group))
-			//table.SetCell(k+1, 5, tview.NewTableCell(entry.Create))
-			//table.SetCell(k+1, 6, tview.NewTableCell(entry.Access))
-			//table.SetCell(k+1, 7, tview.NewTableCell(entry.Change))
 		}
 	}
 }
@@ -145,19 +139,6 @@ func SetEntries(table *tview.Table, entries []Entry) {
 func run() (int, error) {
 	app := tview.NewApplication()
 	table := tview.NewTable().SetSelectable(true, false)
-
-	entries := Entries(".")
-
-	SetEntries(table, entries)
-
-	table.SetDoneFunc(func(key tcell.Key) {
-		if key == tcell.KeyEscape {
-			app.Stop()
-		}
-	}).SetSelectedFunc(func(row int, column int) {
-		table.GetCell(row, column).SetText("gorilla")
-	})
-
 	// get current path
 	currentDir, err := os.Getwd()
 	if err != nil {
@@ -165,17 +146,45 @@ func run() (int, error) {
 	}
 
 	inputPath := tview.NewInputField().SetText(currentDir)
+	entries := Entries(currentDir)
+	SetEntries(table, entries)
+
+	table.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			app.Stop()
+		}
+	}).SetSelectedFunc(func(row int, column int) {
+		//	entry := entries[row-1]
+		//	if entry.IsDir {
+		//		dir := path.Join(table.GetCell(row, column).Text, entry.Name)
+		//		inputPath.SetText(dir)
+		//		SetEntries(table, Entries(dir))
+		//	}
+	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTab {
+			app.SetFocus(inputPath)
+		}
+		return event
+	})
 
 	inputPath.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			app.Stop()
+		}
+
 		if key == tcell.KeyEnter {
-			// specified file path
 			SetEntries(table, Entries(inputPath.GetText()))
 		}
+	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTab {
+			app.SetFocus(table)
+		}
+		return event
 	})
 
 	grid := tview.NewGrid().SetRows(1, 0)
 	grid.AddItem(inputPath, 0, 0, 1, 1, 0, 0, true)
-	grid.AddItem(table, 1, 0, 2, 2, 0, 0, false)
+	grid.AddItem(table, 1, 0, 2, 2, 0, 0, true)
 
 	if err := app.SetRoot(grid, true).Run(); err != nil {
 		app.Stop()
