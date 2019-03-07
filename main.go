@@ -5,9 +5,12 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
+	"path"
 	"path/filepath"
 	"strconv"
 	"syscall"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
@@ -30,6 +33,56 @@ type Entry struct {
 	Owner      string
 	Group      string
 	IsDir      bool
+}
+
+// MoveHistory have the move history
+type MoveHistory struct {
+	idx       int
+	histories []string
+}
+
+// Save save the move history
+func (p *MoveHistory) Save(path string) {
+	count := len(p.histories)
+
+	// if not have history
+	if count == 0 {
+		p.histories = append(p.histories, path)
+	} else if p.idx == count-1 {
+		p.histories = append(p.histories, path)
+		p.idx++
+	} else {
+		p.histories = append(p.histories[:p.idx+1], path)
+		p.idx = len(p.histories) - 1
+	}
+}
+
+// Previous return the previous history
+func (p *MoveHistory) Previous() string {
+	count := len(p.histories)
+	if count == 0 {
+		return ""
+	}
+
+	p.idx--
+	if p.idx < 0 {
+		p.idx = 0
+	}
+	return p.histories[p.idx]
+}
+
+// Next return the next history
+func (p *MoveHistory) Next() string {
+	count := len(p.histories)
+	if count == 0 {
+		return ""
+	}
+
+	p.idx++
+	if p.idx >= count {
+		p.idx = count - 1
+	}
+	return p.histories[p.idx]
 }
 
 // Entries return current entries
@@ -116,6 +169,7 @@ func SetHeader(table *tview.Table) {
 	}
 }
 
+// SetEntries set table entries
 func SetEntries(table *tview.Table, entries []Entry) {
 	table = table.Clear()
 	SetHeader(table)
@@ -134,18 +188,27 @@ func SetEntries(table *tview.Table, entries []Entry) {
 			table.SetCell(k+1, 4, tview.NewTableCell(entry.Group))
 		}
 	}
+	table.ScrollToBeginning()
+}
+
+func init() {
+	log.SetOutput(os.Stdout)
 }
 
 func run() (int, error) {
 	app := tview.NewApplication()
-	table := tview.NewTable().SetSelectable(true, false)
 	// get current path
 	currentDir, err := os.Getwd()
 	if err != nil {
 		return 1, err
 	}
 
+	history := &MoveHistory{}
+	history.Save(currentDir)
+
+	table := tview.NewTable().SetSelectable(true, false)
 	inputPath := tview.NewInputField().SetText(currentDir)
+
 	entries := Entries(currentDir)
 	SetEntries(table, entries)
 
@@ -153,16 +216,42 @@ func run() (int, error) {
 		if key == tcell.KeyEscape {
 			app.Stop()
 		}
+
 	}).SetSelectedFunc(func(row int, column int) {
-		//	entry := entries[row-1]
-		//	if entry.IsDir {
-		//		dir := path.Join(table.GetCell(row, column).Text, entry.Name)
-		//		inputPath.SetText(dir)
-		//		SetEntries(table, Entries(dir))
-		//	}
+		if len(entries) == 0 {
+			return
+		}
+
+		entry := entries[row-1]
+
+		if entry.IsDir {
+			path := path.Join(inputPath.GetText(), table.GetCell(row, column).Text)
+			history.Save(path)
+			inputPath.SetText(path)
+			entries = Entries(path)
+			SetEntries(table, entries)
+		}
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTab {
 			app.SetFocus(inputPath)
+		}
+
+		if event.Rune() == 'h' {
+			path := history.Previous()
+			if path != "" {
+				inputPath.SetText(path)
+				entries = Entries(path)
+				SetEntries(table, entries)
+			}
+		}
+
+		if event.Rune() == 'l' {
+			path := history.Next()
+			if path != "" {
+				inputPath.SetText(path)
+				entries = Entries(path)
+				SetEntries(table, entries)
+			}
 		}
 		return event
 	})
@@ -171,10 +260,15 @@ func run() (int, error) {
 		if key == tcell.KeyEscape {
 			app.Stop()
 		}
-
 		if key == tcell.KeyEnter {
-			SetEntries(table, Entries(inputPath.GetText()))
+			path := inputPath.GetText()
+			history.Save(path)
+			entries = Entries(path)
+			SetEntries(table, entries)
+
+			app.SetFocus(table)
 		}
+
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTab {
 			app.SetFocus(table)
@@ -186,7 +280,7 @@ func run() (int, error) {
 	grid.AddItem(inputPath, 0, 0, 1, 1, 0, 0, true)
 	grid.AddItem(table, 1, 0, 2, 2, 0, 0, true)
 
-	if err := app.SetRoot(grid, true).Run(); err != nil {
+	if err := app.SetRoot(grid, true).SetFocus(table).Run(); err != nil {
 		app.Stop()
 		return 1, err
 	}
@@ -198,8 +292,6 @@ func main() {
 	exitCode, err := run()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(exitCode)
 	}
-
 	os.Exit(exitCode)
 }
