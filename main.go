@@ -44,8 +44,18 @@ type MoveHistory struct {
 
 // Save save the move history
 func (p *MoveHistory) Save(path string) {
-	p.histories = append(p.histories, path)
-	p.idx++
+	count := len(p.histories)
+
+	// if not have history
+	if count == 0 {
+		p.histories = append(p.histories, path)
+	} else if p.idx == count-1 {
+		p.histories = append(p.histories, path)
+		p.idx++
+	} else {
+		p.histories = append(p.histories[:p.idx+1], path)
+		p.idx = len(p.histories) - 1
+	}
 }
 
 // Previous return the previous history
