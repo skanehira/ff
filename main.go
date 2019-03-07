@@ -14,56 +14,7 @@ import (
 )
 
 var entryManager *EntryManager
-
-// MoveHistory have the move history
-type MoveHistory struct {
-	idx       int
-	histories []string
-}
-
-// Save save the move history
-func (p *MoveHistory) Save(path string) {
-	count := len(p.histories)
-
-	// if not have history
-	if count == 0 {
-		p.histories = append(p.histories, path)
-	} else if p.idx == count-1 {
-		p.histories = append(p.histories, path)
-		p.idx++
-	} else {
-		p.histories = append(p.histories[:p.idx+1], path)
-		p.idx = len(p.histories) - 1
-	}
-}
-
-// Previous return the previous history
-func (p *MoveHistory) Previous() string {
-	count := len(p.histories)
-	if count == 0 {
-		return ""
-	}
-
-	p.idx--
-	if p.idx < 0 {
-		p.idx = 0
-	}
-	return p.histories[p.idx]
-}
-
-// Next return the next history
-func (p *MoveHistory) Next() string {
-	count := len(p.histories)
-	if count == 0 {
-		return ""
-	}
-
-	p.idx++
-	if p.idx >= count {
-		p.idx = count - 1
-	}
-	return p.histories[p.idx]
-}
+var historyManager *HistoryManager
 
 func initialize() (int, error) {
 	// init logger
@@ -83,6 +34,8 @@ func initialize() (int, error) {
 
 	// init entry manager
 	entryManager = NewEntryManager()
+	// init history manager
+	historyManager = NewHistoryManager()
 
 	return 0, nil
 }
@@ -101,8 +54,7 @@ func run() (int, error) {
 		return 1, err
 	}
 
-	history := &MoveHistory{}
-	history.Save(currentDir)
+	historyManager.Save(currentDir)
 
 	inputPath := tview.NewInputField().SetText(currentDir)
 
@@ -124,7 +76,7 @@ func run() (int, error) {
 
 		if entry.IsDir {
 			path := path.Join(inputPath.GetText(), entryManager.GetCell(row, column).Text)
-			history.Save(path)
+			historyManager.Save(path)
 			inputPath.SetText(path)
 			entryManager.SetEntries(path)
 			entryManager.SetColumns()
@@ -135,7 +87,7 @@ func run() (int, error) {
 		}
 
 		if event.Rune() == 'h' {
-			path := history.Previous()
+			path := historyManager.Previous()
 			if path != "" {
 				inputPath.SetText(path)
 				entryManager.SetEntries(path)
@@ -144,7 +96,7 @@ func run() (int, error) {
 		}
 
 		if event.Rune() == 'l' {
-			path := history.Next()
+			path := historyManager.Next()
 			if path != "" {
 				inputPath.SetText(path)
 				entryManager.SetEntries(path)
@@ -160,7 +112,7 @@ func run() (int, error) {
 		}
 		if key == tcell.KeyEnter {
 			path := inputPath.GetText()
-			history.Save(path)
+			historyManager.Save(path)
 			entryManager.SetEntries(path)
 			entryManager.SetColumns()
 
