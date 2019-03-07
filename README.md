@@ -6,7 +6,7 @@ This is file manager on terminal written in Go.
 ```sh
 $ git clone https://github.com/skanehira/filemanager
 $ cd filemanager
-$ GOMODULE=on go build
+$ GOMODULE=on go install
 ```
 
 # Keybinding
