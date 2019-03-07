@@ -155,9 +155,6 @@ func SetHeader(table *tview.Table) {
 		"Permission",
 		"Owner",
 		"Group",
-		//"Create",
-		//"Access",
-		//"Change",
 	}
 	for k, v := range headers {
 		table.SetCell(0, k, &tview.TableCell{
