@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"syscall"
 
+	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/gdamore/tcell"
@@ -181,11 +182,30 @@ func SetEntries(table *tview.Table, entries []Entry) {
 	table.ScrollToBeginning()
 }
 
-func init() {
-	log.SetOutput(os.Stdout)
+func initialize() (int, error) {
+	home, err := homedir.Dir()
+	if err != nil {
+		log.Println("cannot get home dir, cause:", err)
+		return 1, err
+	}
+	logFile, err := os.OpenFile(filepath.Join(home, "filemanager.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+
+	if err != nil {
+		log.Println("cannot open log file, cause:", err)
+		return 1, err
+	}
+
+	log.SetOutput(logFile)
+	return 0, nil
 }
 
 func run() (int, error) {
+	// initialize application
+	exitCode, err := initialize()
+	if err != nil {
+		return exitCode, err
+	}
+
 	app := tview.NewApplication()
 	// get current path
 	currentDir, err := os.Getwd()
