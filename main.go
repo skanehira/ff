@@ -13,8 +13,10 @@ import (
 	"github.com/rivo/tview"
 )
 
-var entryManager *EntryManager
-var historyManager *HistoryManager
+var (
+	entryManager   *EntryManager
+	historyManager *HistoryManager
+)
 
 func initialize() (int, error) {
 	// init logger
@@ -65,44 +67,57 @@ func run() (int, error) {
 		if key == tcell.KeyEscape {
 			app.Stop()
 		}
-
-	}).SetSelectedFunc(func(row int, column int) {
-		entries := entryManager.Entries()
-		if len(entries) == 0 {
-			return
-		}
-
-		entry := entries[row-1]
-
-		if entry.IsDir {
-			path := path.Join(inputPath.GetText(), entryManager.GetCell(row, column).Text)
-			historyManager.Save(path)
-			inputPath.SetText(path)
-			entryManager.SetEntries(path)
-			entryManager.SetColumns()
-		}
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() == tcell.KeyTab {
+		switch {
+		// go to input view
+		case event.Key() == tcell.KeyTab:
 			app.SetFocus(inputPath)
-		}
-
-		if event.Rune() == 'h' {
+		// go to prev history
+		case event.Key() == tcell.KeyCtrlH:
 			path := historyManager.Previous()
 			if path != "" {
 				inputPath.SetText(path)
 				entryManager.SetEntries(path)
 				entryManager.SetColumns()
 			}
-		}
-
-		if event.Rune() == 'l' {
+		// go to next history
+		case event.Key() == tcell.KeyCtrlL:
 			path := historyManager.Next()
 			if path != "" {
 				inputPath.SetText(path)
 				entryManager.SetEntries(path)
 				entryManager.SetColumns()
 			}
+		// go to specified dir
+		// TODO save position info
+		case event.Rune() == 'h':
+			path := filepath.Dir(inputPath.GetText())
+			if path != "" {
+				inputPath.SetText(path)
+				entryManager.SetEntries(path)
+				entryManager.SetColumns()
+			}
+		// go to parent dir
+		case event.Rune() == 'l':
+			entries := entryManager.Entries()
+			if len(entries) == 0 {
+				return event
+			}
+
+			row, column := entryManager.GetSelection()
+			entry := entries[row-1]
+
+			if entry.IsDir {
+				path := path.Join(inputPath.GetText(), entryManager.GetCell(row, column).Text)
+				historyManager.Save(path)
+				inputPath.SetText(path)
+				entryManager.SetEntries(path)
+				entryManager.SetColumns()
+			}
+		// TODO mark file or dir
+		case event.Rune() == ' ':
 		}
+
 		return event
 	})
 
