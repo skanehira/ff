@@ -9,6 +9,7 @@ import (
 
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/djherbis/times.v1"
 )
 
@@ -62,7 +63,7 @@ func (e *EntryManager) SetEntries(path string) []Entry {
 		// get file times
 		t, err := times.Stat(filepath.Join(path, file.Name()))
 		if err != nil {
-			// TODO write logger
+			log.Println(err)
 			continue
 		}
 
@@ -132,7 +133,7 @@ func (e *EntryManager) SetHeader() {
 
 // SetColumns set entries
 func (e *EntryManager) SetColumns() {
-	table := e.Table.Clear()
+	table := e.Clear()
 	e.SetHeader()
 	for k, entry := range e.entries {
 		if entry.IsDir {
@@ -149,5 +150,6 @@ func (e *EntryManager) SetColumns() {
 			table.SetCell(k+1, 4, tview.NewTableCell(entry.Group))
 		}
 	}
-	table.ScrollToBeginning()
+
+	table.Select(0, 0)
 }
