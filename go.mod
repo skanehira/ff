@@ -1,4 +1,4 @@
-module github.com/skanehira/filemanager
+module github.com/skanehira/ff
 
 go 1.12
 

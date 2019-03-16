@@ -1,4 +1,4 @@
-# filemanager
+# ff
 This is file manager on terminal written in Go.
 
 
