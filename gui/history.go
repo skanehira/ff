@@ -1,4 +1,4 @@
-package main
+package gui
 
 // HistoryManager have the move history
 type HistoryManager struct {
