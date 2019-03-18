@@ -16,9 +16,7 @@ func (p *HistoryManager) Save(path string) {
 	count := len(p.histories)
 
 	// if not have history
-	if count == 0 {
-		p.histories = append(p.histories, path)
-	} else if p.idx == count-1 {
+	if p.idx == count-1 || count == 0 {
 		p.histories = append(p.histories, path)
 		p.idx++
 	} else {

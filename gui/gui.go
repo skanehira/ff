@@ -14,7 +14,7 @@ import (
 
 // Gui gui have some manager
 type Gui struct {
-	InputPath      tview.InputField
+	InputPath      *tview.InputField
 	HistoryManager *HistoryManager
 	EntryManager   *EntryManager
 	App            *tview.Application
@@ -52,7 +52,7 @@ func (gui *Gui) Run() (int, error) {
 
 	gui.HistoryManager.Save(currentDir)
 
-	inputPath := tview.NewInputField().SetText(currentDir)
+	gui.InputPath = tview.NewInputField().SetText(currentDir)
 
 	gui.EntryManager.SetEntries(currentDir)
 	gui.EntryManager.SetColumns()
@@ -65,12 +65,12 @@ func (gui *Gui) Run() (int, error) {
 		switch {
 		// go to input view
 		case event.Key() == tcell.KeyTab:
-			gui.App.SetFocus(inputPath)
+			gui.App.SetFocus(gui.InputPath)
 		// go to prev history
 		case event.Key() == tcell.KeyCtrlH:
 			path := gui.HistoryManager.Previous()
 			if path != "" {
-				inputPath.SetText(path)
+				gui.InputPath.SetText(path)
 				gui.EntryManager.SetEntries(path)
 				gui.EntryManager.SetColumns()
 			}
@@ -78,16 +78,16 @@ func (gui *Gui) Run() (int, error) {
 		case event.Key() == tcell.KeyCtrlL:
 			path := gui.HistoryManager.Next()
 			if path != "" {
-				inputPath.SetText(path)
+				gui.InputPath.SetText(path)
 				gui.EntryManager.SetEntries(path)
 				gui.EntryManager.SetColumns()
 			}
 		// go to specified dir
 		// TODO save position info
 		case event.Rune() == 'h':
-			path := filepath.Dir(inputPath.GetText())
+			path := filepath.Dir(gui.InputPath.GetText())
 			if path != "" {
-				inputPath.SetText(path)
+				gui.InputPath.SetText(path)
 				gui.EntryManager.SetEntries(path)
 				gui.EntryManager.SetColumns()
 			}
@@ -102,9 +102,9 @@ func (gui *Gui) Run() (int, error) {
 			entry := entries[row-1]
 
 			if entry.IsDir {
-				path := path.Join(inputPath.GetText(), gui.EntryManager.GetCell(row, column).Text)
+				path := path.Join(gui.InputPath.GetText(), gui.EntryManager.GetCell(row, column).Text)
 				gui.HistoryManager.Save(path)
-				inputPath.SetText(path)
+				gui.InputPath.SetText(path)
 				gui.EntryManager.SetEntries(path)
 				gui.EntryManager.SetColumns()
 			}
@@ -115,12 +115,12 @@ func (gui *Gui) Run() (int, error) {
 		return event
 	})
 
-	inputPath.SetDoneFunc(func(key tcell.Key) {
+	gui.InputPath.SetDoneFunc(func(key tcell.Key) {
 		if key == tcell.KeyEscape {
 			gui.App.Stop()
 		}
 		if key == tcell.KeyEnter {
-			path := inputPath.GetText()
+			path := gui.InputPath.GetText()
 			gui.HistoryManager.Save(path)
 			gui.EntryManager.SetEntries(path)
 			gui.EntryManager.SetColumns()
@@ -136,7 +136,7 @@ func (gui *Gui) Run() (int, error) {
 	})
 
 	grid := tview.NewGrid().SetRows(1, 0)
-	grid.AddItem(inputPath, 0, 0, 1, 1, 0, 0, true)
+	grid.AddItem(gui.InputPath, 0, 0, 1, 1, 0, 0, true)
 	grid.AddItem(gui.EntryManager, 1, 0, 2, 2, 0, 0, true)
 
 	if err := gui.App.SetRoot(grid, true).SetFocus(gui.EntryManager).Run(); err != nil {
