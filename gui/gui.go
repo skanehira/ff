@@ -12,9 +12,26 @@ import (
 	"github.com/rivo/tview"
 )
 
+// Register memory resources
+type Register struct {
+	MoveSources []string
+	CopySources []string
+}
+
+// ClearMoveResources clear resources
+func (r *Register) ClearMoveResources() {
+	r.MoveSources = []string{}
+}
+
+// ClearCopyResources clear resouces
+func (r *Register) ClearCopyResources() {
+	r.MoveSources = []string{}
+}
+
 // Gui gui have some manager
 type Gui struct {
 	InputPath      *tview.InputField
+	Register       *Register
 	HistoryManager *HistoryManager
 	EntryManager   *EntryManager
 	App            *tview.Application
@@ -108,8 +125,28 @@ func (gui *Gui) Run() (int, error) {
 				gui.EntryManager.SetEntries(path)
 				gui.EntryManager.SetColumns()
 			}
-		// TODO mark file or dir
-		case event.Rune() == ' ':
+		// cut entry
+		case event.Rune() == 'd':
+			source := filepath.Join(gui.InputPath.GetText(), gui.EntryManager.GetCell(gui.EntryManager.GetSelection()).Text)
+			gui.Register.MoveSources = append(gui.Register.MoveSources, source)
+		case event.Rune() == 'y':
+			source := filepath.Join(gui.InputPath.GetText(), gui.EntryManager.GetCell(gui.EntryManager.GetSelection()).Text)
+			gui.Register.CopySources = append(gui.Register.CopySources, source)
+		case event.Rune() == 'p':
+			for _, source := range gui.Register.MoveSources {
+				dest := filepath.Join(gui.InputPath.GetText(), filepath.Base(source))
+				if err := os.Rename(source, dest); err != nil {
+					log.Printf("cannot copy or move the file: %v", err)
+				}
+			}
+
+			// TODO implement file copy
+			//for _, source := range gui.Register.CopyResources {
+			//dest := filepath.Join(gui.InputPath.GetText(), filepath.Base(source))
+			//}
+
+			gui.EntryManager.SetEntries(gui.InputPath.GetText())
+			gui.EntryManager.SetColumns()
 		}
 
 		return event
