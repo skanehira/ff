@@ -2,10 +2,12 @@ package gui
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gdamore/tcell"
 	"github.com/mitchellh/go-homedir"
@@ -56,7 +58,24 @@ func New() *Gui {
 		EntryManager:   NewEntryManager(),
 		HistoryManager: NewHistoryManager(),
 		App:            tview.NewApplication(),
+		Register:       &Register{},
 	}
+}
+
+// ExecCmd exec specified command
+func (gui *Gui) ExecCmd(cmd string, args ...string) error {
+	command := exec.Command(cmd, args...)
+	command.Stdin = os.Stdin
+	command.Stdout = os.Stdout
+	command.Stderr = os.Stderr
+
+	return command.Run()
+}
+
+// ExecCmdWithoutStd exec specified command
+func (gui *Gui) ExecCmdWithoutStd(cmd string, args ...string) error {
+	command := exec.Command(cmd, args...)
+	return command.Run()
 }
 
 // Run run ff
@@ -136,7 +155,7 @@ func (gui *Gui) Run() (int, error) {
 			for _, source := range gui.Register.MoveSources {
 				dest := filepath.Join(gui.InputPath.GetText(), filepath.Base(source))
 				if err := os.Rename(source, dest); err != nil {
-					log.Printf("cannot copy or move the file: %v", err)
+					log.Printf("cannot copy or move the file: %s", err)
 				}
 			}
 
@@ -147,6 +166,21 @@ func (gui *Gui) Run() (int, error) {
 
 			gui.EntryManager.SetEntries(gui.InputPath.GetText())
 			gui.EntryManager.SetColumns()
+		// edit file with $EDITOR
+		case event.Rune() == 'e':
+			editor := os.Getenv("EDITOR")
+			if editor == "" {
+				log.Println("please set your editor to $EDITOR")
+				return event
+			}
+
+			entry := gui.EntryManager.GetCell(gui.EntryManager.GetSelection()).Text
+
+			gui.App.Suspend(func() {
+				if err := gui.ExecCmd(editor, entry); err != nil {
+					log.Printf("cannot edit: %s", err)
+				}
+			})
 		}
 
 		return event
