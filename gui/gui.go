@@ -63,18 +63,15 @@ func New() *Gui {
 }
 
 // ExecCmd exec specified command
-func (gui *Gui) ExecCmd(cmd string, args ...string) error {
+func (gui *Gui) ExecCmd(attachStd bool, cmd string, args ...string) error {
 	command := exec.Command(cmd, args...)
-	command.Stdin = os.Stdin
-	command.Stdout = os.Stdout
-	command.Stderr = os.Stderr
 
-	return command.Run()
-}
+	if attachStd {
+		command.Stdin = os.Stdin
+		command.Stdout = os.Stdout
+		command.Stderr = os.Stderr
+	}
 
-// ExecCmdWithoutStd exec specified command
-func (gui *Gui) ExecCmdWithoutStd(cmd string, args ...string) error {
-	command := exec.Command(cmd, args...)
 	return command.Run()
 }
 
@@ -177,7 +174,7 @@ func (gui *Gui) Run() (int, error) {
 			entry := gui.EntryManager.GetCell(gui.EntryManager.GetSelection()).Text
 
 			gui.App.Suspend(func() {
-				if err := gui.ExecCmd(editor, entry); err != nil {
+				if err := gui.ExecCmd(true, editor, entry); err != nil {
 					log.Printf("cannot edit: %s", err)
 				}
 			})
