@@ -104,11 +104,13 @@ func (e *EntryManager) SetEntries(path string) []Entry {
 			IsDir:      file.IsDir(),
 			Owner:      owner,
 			Group:      group,
+			Path:       filepath.Join(path, file.Name()),
 			// TODO add file path
 		})
 	}
 
 	e.entries = entries
+	e.SetColumns()
 	return entries
 }
 
@@ -152,4 +154,13 @@ func (e *EntryManager) SetColumns() {
 	}
 
 	table.Select(0, 0)
+}
+
+// GetSelectEntry get selected entry
+func (e *EntryManager) GetSelectEntry() Entry {
+	row, _ := e.GetSelection()
+	if len(e.entries) == 0 {
+		return Entry{}
+	}
+	return e.entries[row-1]
 }

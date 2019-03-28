@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
@@ -83,38 +82,38 @@ func (gui *Gui) Run() (int, error) {
 		return 1, err
 	}
 
-	gui.HistoryManager.Save(currentDir)
-
 	gui.InputPath = tview.NewInputField().SetText(currentDir)
 
+	gui.HistoryManager.Save(currentDir)
 	gui.EntryManager.SetEntries(currentDir)
-	gui.EntryManager.SetColumns()
 
 	gui.EntryManager.SetDoneFunc(func(key tcell.Key) {
 		if key == tcell.KeyEscape {
 			gui.App.Stop()
 		}
+
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch {
 		// go to input view
 		case event.Key() == tcell.KeyTab:
 			gui.App.SetFocus(gui.InputPath)
+
 		// go to prev history
 		case event.Key() == tcell.KeyCtrlH:
 			path := gui.HistoryManager.Previous()
 			if path != "" {
 				gui.InputPath.SetText(path)
 				gui.EntryManager.SetEntries(path)
-				gui.EntryManager.SetColumns()
 			}
+
 		// go to next history
 		case event.Key() == tcell.KeyCtrlL:
 			path := gui.HistoryManager.Next()
 			if path != "" {
 				gui.InputPath.SetText(path)
 				gui.EntryManager.SetEntries(path)
-				gui.EntryManager.SetColumns()
 			}
+
 		// go to specified dir
 		// TODO save position info
 		case event.Rune() == 'h':
@@ -122,32 +121,31 @@ func (gui *Gui) Run() (int, error) {
 			if path != "" {
 				gui.InputPath.SetText(path)
 				gui.EntryManager.SetEntries(path)
-				gui.EntryManager.SetColumns()
 			}
+
 		// go to parent dir
 		case event.Rune() == 'l':
-			entries := gui.EntryManager.Entries()
-			if len(entries) == 0 {
+			if len(gui.EntryManager.Entries()) == 0 {
 				return event
 			}
 
-			row, column := gui.EntryManager.GetSelection()
-			entry := entries[row-1]
+			entry := gui.EntryManager.GetSelectEntry()
 
 			if entry.IsDir {
-				path := path.Join(gui.InputPath.GetText(), gui.EntryManager.GetCell(row, column).Text)
-				gui.HistoryManager.Save(path)
-				gui.InputPath.SetText(path)
-				gui.EntryManager.SetEntries(path)
-				gui.EntryManager.SetColumns()
+				gui.HistoryManager.Save(entry.Path)
+				gui.InputPath.SetText(entry.Path)
+				gui.EntryManager.SetEntries(entry.Path)
 			}
+
 		// cut entry
 		case event.Rune() == 'd':
 			source := filepath.Join(gui.InputPath.GetText(), gui.EntryManager.GetCell(gui.EntryManager.GetSelection()).Text)
 			gui.Register.MoveSources = append(gui.Register.MoveSources, source)
+
 		case event.Rune() == 'y':
 			source := filepath.Join(gui.InputPath.GetText(), gui.EntryManager.GetCell(gui.EntryManager.GetSelection()).Text)
 			gui.Register.CopySources = append(gui.Register.CopySources, source)
+
 		case event.Rune() == 'p':
 			for _, source := range gui.Register.MoveSources {
 				dest := filepath.Join(gui.InputPath.GetText(), filepath.Base(source))
@@ -162,7 +160,7 @@ func (gui *Gui) Run() (int, error) {
 			//}
 
 			gui.EntryManager.SetEntries(gui.InputPath.GetText())
-			gui.EntryManager.SetColumns()
+
 		// edit file with $EDITOR
 		case event.Rune() == 'e':
 			editor := os.Getenv("EDITOR")
@@ -171,10 +169,10 @@ func (gui *Gui) Run() (int, error) {
 				return event
 			}
 
-			entry := gui.EntryManager.GetCell(gui.EntryManager.GetSelection()).Text
+			entry := gui.EntryManager.GetSelectEntry()
 
 			gui.App.Suspend(func() {
-				if err := gui.ExecCmd(true, editor, entry); err != nil {
+				if err := gui.ExecCmd(true, editor, entry.Path); err != nil {
 					log.Printf("cannot edit: %s", err)
 				}
 			})
@@ -187,11 +185,11 @@ func (gui *Gui) Run() (int, error) {
 		if key == tcell.KeyEscape {
 			gui.App.Stop()
 		}
+
 		if key == tcell.KeyEnter {
 			path := gui.InputPath.GetText()
 			gui.HistoryManager.Save(path)
 			gui.EntryManager.SetEntries(path)
-			gui.EntryManager.SetColumns()
 
 			gui.App.SetFocus(gui.EntryManager)
 		}
@@ -200,6 +198,7 @@ func (gui *Gui) Run() (int, error) {
 		if event.Key() == tcell.KeyTab {
 			gui.App.SetFocus(gui.EntryManager)
 		}
+
 		return event
 	})
 
@@ -210,6 +209,7 @@ func (gui *Gui) Run() (int, error) {
 	if err := gui.App.SetRoot(grid, true).SetFocus(gui.EntryManager).Run(); err != nil {
 		gui.App.Stop()
 		return 1, err
+
 	}
 
 	return 0, nil
