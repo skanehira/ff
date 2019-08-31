@@ -8,8 +8,7 @@ import (
 )
 
 func main() {
-	gui := gui.New()
-	exitCode, err := gui.Run()
+	exitCode, err := gui.New().Run()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}

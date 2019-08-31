@@ -15,18 +15,18 @@ import (
 
 // Register memory resources
 type Register struct {
-	MoveSources []string
-	CopySources []string
+	MoveSources []*Entry
+	CopySources []*Entry
 }
 
 // ClearMoveResources clear resources
 func (r *Register) ClearMoveResources() {
-	r.MoveSources = []string{}
+	r.MoveSources = []*Entry{}
 }
 
 // ClearCopyResources clear resouces
 func (r *Register) ClearCopyResources() {
-	r.MoveSources = []string{}
+	r.MoveSources = []*Entry{}
 }
 
 // Gui gui have some manager
@@ -36,6 +36,13 @@ type Gui struct {
 	HistoryManager *HistoryManager
 	EntryManager   *EntryManager
 	App            *tview.Application
+}
+
+func hasEntry(gui *Gui) bool {
+	if len(gui.EntryManager.Entries()) != 0 {
+		return true
+	}
+	return false
 }
 
 // New create new gui
@@ -61,7 +68,7 @@ func New() *Gui {
 	}
 }
 
-// ExecCmd exec specified command
+// ExecCmd execute command
 func (gui *Gui) ExecCmd(attachStd bool, cmd string, args ...string) error {
 	command := exec.Command(cmd, args...)
 
@@ -74,6 +81,11 @@ func (gui *Gui) ExecCmd(attachStd bool, cmd string, args ...string) error {
 	return command.Run()
 }
 
+// Stop stop ff
+func (gui *Gui) Stop() {
+	gui.App.Stop()
+}
+
 // Run run ff
 func (gui *Gui) Run() (int, error) {
 	// get current path
@@ -84,7 +96,7 @@ func (gui *Gui) Run() (int, error) {
 
 	gui.InputPath = tview.NewInputField().SetText(currentDir)
 
-	gui.HistoryManager.Save(currentDir)
+	gui.HistoryManager.Save(0, currentDir)
 	gui.EntryManager.SetEntries(currentDir)
 
 	gui.EntryManager.SetDoneFunc(func(key tcell.Key) {
@@ -93,73 +105,38 @@ func (gui *Gui) Run() (int, error) {
 		}
 
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		globalKeybinding(gui, event)
 		switch {
-		// go to input view
-		case event.Key() == tcell.KeyTab:
-			gui.App.SetFocus(gui.InputPath)
-
-		// go to prev history
-		case event.Key() == tcell.KeyCtrlH:
-			path := gui.HistoryManager.Previous()
-			if path != "" {
-				gui.InputPath.SetText(path)
-				gui.EntryManager.SetEntries(path)
-			}
-
-		// go to next history
-		case event.Key() == tcell.KeyCtrlL:
-			path := gui.HistoryManager.Next()
-			if path != "" {
-				gui.InputPath.SetText(path)
-				gui.EntryManager.SetEntries(path)
-			}
-
-		// go to specified dir
-		// TODO save position info
-		case event.Rune() == 'h':
-			path := filepath.Dir(gui.InputPath.GetText())
-			if path != "" {
-				gui.InputPath.SetText(path)
-				gui.EntryManager.SetEntries(path)
-			}
-
-		// go to parent dir
-		case event.Rune() == 'l':
-			if len(gui.EntryManager.Entries()) == 0 {
-				return event
-			}
-
-			entry := gui.EntryManager.GetSelectEntry()
-
-			if entry.IsDir {
-				gui.HistoryManager.Save(entry.Path)
-				gui.InputPath.SetText(entry.Path)
-				gui.EntryManager.SetEntries(entry.Path)
-			}
-
 		// cut entry
 		case event.Rune() == 'd':
-			source := filepath.Join(gui.InputPath.GetText(), gui.EntryManager.GetCell(gui.EntryManager.GetSelection()).Text)
-			gui.Register.MoveSources = append(gui.Register.MoveSources, source)
-
-		case event.Rune() == 'y':
-			source := filepath.Join(gui.InputPath.GetText(), gui.EntryManager.GetCell(gui.EntryManager.GetSelection()).Text)
-			gui.Register.CopySources = append(gui.Register.CopySources, source)
-
-		case event.Rune() == 'p':
-			for _, source := range gui.Register.MoveSources {
-				dest := filepath.Join(gui.InputPath.GetText(), filepath.Base(source))
-				if err := os.Rename(source, dest); err != nil {
-					log.Printf("cannot copy or move the file: %s", err)
-				}
+			if !hasEntry(gui) {
+				return event
 			}
+			//gui.EntryManager.SetViewable(false)
+			gui.Register.MoveSources = append(gui.Register.MoveSources, gui.EntryManager.GetSelectEntry())
+
+		// copy entry
+		case event.Rune() == 'y':
+			if !hasEntry(gui) {
+				return event
+			}
+			gui.Register.CopySources = append(gui.Register.CopySources, gui.EntryManager.GetSelectEntry())
+
+		// paset entry
+		case event.Rune() == 'p':
+			//for _, source := range gui.Register.MoveSources {
+			//	dest := filepath.Join(gui.InputPath.GetText(), filepath.Base(source))
+			//	if err := os.Rename(source, dest); err != nil {
+			//		log.Printf("cannot copy or move the file: %s", err)
+			//	}
+			//}
 
 			// TODO implement file copy
 			//for _, source := range gui.Register.CopyResources {
 			//dest := filepath.Join(gui.InputPath.GetText(), filepath.Base(source))
 			//}
 
-			gui.EntryManager.SetEntries(gui.InputPath.GetText())
+			//gui.EntryManager.SetEntries(gui.InputPath.GetText())
 
 		// edit file with $EDITOR
 		case event.Rune() == 'e':
@@ -176,6 +153,8 @@ func (gui *Gui) Run() (int, error) {
 					log.Printf("cannot edit: %s", err)
 				}
 			})
+		case event.Rune() == 'q':
+			gui.Stop()
 		}
 
 		return event
@@ -188,7 +167,8 @@ func (gui *Gui) Run() (int, error) {
 
 		if key == tcell.KeyEnter {
 			path := gui.InputPath.GetText()
-			gui.HistoryManager.Save(path)
+			row, _ := gui.EntryManager.GetSelection()
+			gui.HistoryManager.Save(row, path)
 			gui.EntryManager.SetEntries(path)
 
 			gui.App.SetFocus(gui.EntryManager)
@@ -209,7 +189,6 @@ func (gui *Gui) Run() (int, error) {
 	if err := gui.App.SetRoot(grid, true).SetFocus(gui.EntryManager).Run(); err != nil {
 		gui.App.Stop()
 		return 1, err
-
 	}
 
 	return 0, nil

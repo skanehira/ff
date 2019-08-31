@@ -28,35 +28,36 @@ type Entry struct {
 	Permission string
 	Owner      string
 	Group      string
+	Viewable   bool
 	IsDir      bool
 }
 
 // EntryManager file list
 type EntryManager struct {
 	*tview.Table
-	entries []Entry
+	entries []*Entry
 }
 
 // NewEntryManager new entry list
 func NewEntryManager() *EntryManager {
 	return &EntryManager{
-		Table: tview.NewTable().SetSelectable(true, false),
+		Table: tview.NewTable().Select(0, 0).SetFixed(1, 1).SetSelectable(true, false),
 	}
 }
 
 // Entries get entries
-func (e *EntryManager) Entries() []Entry {
+func (e *EntryManager) Entries() []*Entry {
 	return e.entries
 }
 
 // SetEntries set entries
-func (e *EntryManager) SetEntries(path string) []Entry {
+func (e *EntryManager) SetEntries(path string) []*Entry {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		return []Entry{}
+		return nil
 	}
 
-	var entries []Entry
+	var entries []*Entry
 	var access, change, create, perm, owner, group string
 
 	for _, file := range files {
@@ -94,7 +95,7 @@ func (e *EntryManager) SetEntries(path string) []Entry {
 		}
 
 		// create entriey
-		entries = append(entries, Entry{
+		entries = append(entries, &Entry{
 			Name:       file.Name(),
 			Access:     access,
 			Create:     create,
@@ -105,7 +106,7 @@ func (e *EntryManager) SetEntries(path string) []Entry {
 			Owner:      owner,
 			Group:      group,
 			Path:       filepath.Join(path, file.Name()),
-			// TODO add file path
+			Viewable:   true,
 		})
 	}
 
@@ -114,9 +115,20 @@ func (e *EntryManager) SetEntries(path string) []Entry {
 	return entries
 }
 
+func (e *EntryManager) RefreshView() {
+	e.SetColumns()
+}
+
+func (e *EntryManager) SetViewable(viewable bool) {
+	entry := e.GetSelectEntry()
+	entry.Viewable = viewable
+	e.RefreshView()
+}
+
 // SetHeader set table header
 func (e *EntryManager) SetHeader() {
-	headers := []string{"Name",
+	headers := []string{
+		"Name",
 		"Size",
 		"Permission",
 		"Owner",
@@ -135,32 +147,40 @@ func (e *EntryManager) SetHeader() {
 
 // SetColumns set entries
 func (e *EntryManager) SetColumns() {
+	if len(e.entries) == 0 {
+		return
+	}
+
 	table := e.Clear()
 	e.SetHeader()
-	for k, entry := range e.entries {
-		if entry.IsDir {
-			table.SetCell(k+1, 0, tview.NewTableCell(entry.Name).SetTextColor(tcell.ColorDarkCyan))
-			table.SetCell(k+1, 1, tview.NewTableCell(entry.Size).SetTextColor(tcell.ColorDarkCyan))
-			table.SetCell(k+1, 2, tview.NewTableCell(entry.Permission).SetTextColor(tcell.ColorDarkCyan))
-			table.SetCell(k+1, 3, tview.NewTableCell(entry.Owner).SetTextColor(tcell.ColorDarkCyan))
-			table.SetCell(k+1, 4, tview.NewTableCell(entry.Group).SetTextColor(tcell.ColorDarkCyan))
-		} else {
-			table.SetCell(k+1, 0, tview.NewTableCell(entry.Name))
-			table.SetCell(k+1, 1, tview.NewTableCell(entry.Size))
-			table.SetCell(k+1, 2, tview.NewTableCell(entry.Permission))
-			table.SetCell(k+1, 3, tview.NewTableCell(entry.Owner))
-			table.SetCell(k+1, 4, tview.NewTableCell(entry.Group))
+	var i int
+	for _, entry := range e.entries {
+		if entry.Viewable {
+			if entry.IsDir {
+				table.SetCell(i+1, 0, tview.NewTableCell(entry.Name).SetTextColor(tcell.ColorDarkCyan))
+				table.SetCell(i+1, 1, tview.NewTableCell(entry.Size).SetTextColor(tcell.ColorDarkCyan))
+				table.SetCell(i+1, 2, tview.NewTableCell(entry.Permission).SetTextColor(tcell.ColorDarkCyan))
+				table.SetCell(i+1, 3, tview.NewTableCell(entry.Owner).SetTextColor(tcell.ColorDarkCyan))
+				table.SetCell(i+1, 4, tview.NewTableCell(entry.Group).SetTextColor(tcell.ColorDarkCyan))
+			} else {
+				table.SetCell(i+1, 0, tview.NewTableCell(entry.Name))
+				table.SetCell(i+1, 1, tview.NewTableCell(entry.Size))
+				table.SetCell(i+1, 2, tview.NewTableCell(entry.Permission))
+				table.SetCell(i+1, 3, tview.NewTableCell(entry.Owner))
+				table.SetCell(i+1, 4, tview.NewTableCell(entry.Group))
+			}
+			i++
 		}
 	}
 
-	table.Select(0, 0)
+	//table.Select(0, 0)
 }
 
 // GetSelectEntry get selected entry
-func (e *EntryManager) GetSelectEntry() Entry {
+func (e *EntryManager) GetSelectEntry() *Entry {
 	row, _ := e.GetSelection()
 	if len(e.entries) == 0 {
-		return Entry{}
+		return nil
 	}
 	return e.entries[row-1]
 }
