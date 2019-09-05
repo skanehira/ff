@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -45,27 +46,35 @@ func hasEntry(gui *Gui) bool {
 	return false
 }
 
-// New create new gui
-func New() *Gui {
+func initLogger() error {
 	// init logger
 	home, err := homedir.Dir()
 	if err != nil {
-		panic(fmt.Sprintf("cannot get home dir, cause: %s", err))
+		return errors.New(fmt.Sprintf("cannot get home dir, cause: %s", err))
 	}
-	logFile, err := os.OpenFile(filepath.Join(home, "filemanager.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	logFile, err := os.OpenFile(filepath.Join(home, "ff.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 
 	if err != nil {
-		panic(fmt.Sprintf("cannot open log file, cause: %s", err))
+		return errors.New(fmt.Sprintf("cannot open log file, cause: %s", err))
 	}
 
 	log.SetOutput(logFile)
+
+	return nil
+}
+
+// New create new gui
+func New() (*Gui, error) {
+	if err := initLogger(); err != nil {
+		return nil, err
+	}
 
 	return &Gui{
 		EntryManager:   NewEntryManager(),
 		HistoryManager: NewHistoryManager(),
 		App:            tview.NewApplication(),
 		Register:       &Register{},
-	}
+	}, nil
 }
 
 // ExecCmd execute command
