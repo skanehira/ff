@@ -40,9 +40,13 @@ type EntryManager struct {
 
 // NewEntryManager new entry list
 func NewEntryManager() *EntryManager {
-	return &EntryManager{
+	e := &EntryManager{
 		Table: tview.NewTable().Select(0, 0).SetFixed(1, 1).SetSelectable(true, false),
 	}
+
+	e.SetBorder(true).SetTitle("files").SetTitleAlign(tview.AlignLeft)
+
+	return e
 }
 
 // Entries get entries

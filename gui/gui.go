@@ -36,6 +36,7 @@ type Gui struct {
 	Register       *Register
 	HistoryManager *HistoryManager
 	EntryManager   *EntryManager
+	Preview        *Preview
 	App            *tview.Application
 }
 
@@ -73,6 +74,7 @@ func New() (*Gui, error) {
 		EntryManager:   NewEntryManager(),
 		HistoryManager: NewHistoryManager(),
 		App:            tview.NewApplication(),
+		Preview:        NewPreview(),
 		Register:       &Register{},
 	}, nil
 }
@@ -169,6 +171,13 @@ func (gui *Gui) Run() (int, error) {
 		return event
 	})
 
+	gui.EntryManager.SetSelectionChangedFunc(func(row, col int) {
+		if row > 1 {
+			f := gui.EntryManager.Entries()[row-1]
+			gui.Preview.UpdateView(gui, f)
+		}
+	})
+
 	gui.InputPath.SetDoneFunc(func(key tcell.Key) {
 		if key == tcell.KeyEscape {
 			gui.App.Stop()
@@ -191,9 +200,10 @@ func (gui *Gui) Run() (int, error) {
 		return event
 	})
 
-	grid := tview.NewGrid().SetRows(1, 0)
-	grid.AddItem(gui.InputPath, 0, 0, 1, 1, 0, 0, true)
-	grid.AddItem(gui.EntryManager, 1, 0, 2, 2, 0, 0, true)
+	grid := tview.NewGrid().SetRows(1, 0).SetColumns(0, 0)
+	grid.AddItem(gui.InputPath, 0, 0, 1, 2, 0, 0, true).
+		AddItem(gui.EntryManager, 1, 0, 1, 1, 0, 0, true).
+		AddItem(gui.Preview, 1, 1, 1, 1, 0, 0, true)
 
 	if err := gui.App.SetRoot(grid, true).SetFocus(gui.EntryManager).Run(); err != nil {
 		gui.App.Stop()
