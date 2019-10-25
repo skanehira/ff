@@ -160,7 +160,7 @@ func (gui *Gui) Run() (int, error) {
 			entry := gui.EntryManager.GetSelectEntry()
 
 			gui.App.Suspend(func() {
-				if err := gui.ExecCmd(true, editor, entry.Path); err != nil {
+				if err := gui.ExecCmd(true, editor, entry.PathName); err != nil {
 					log.Printf("cannot edit: %s", err)
 				}
 			})
@@ -172,7 +172,7 @@ func (gui *Gui) Run() (int, error) {
 	})
 
 	gui.EntryManager.SetSelectionChangedFunc(func(row, col int) {
-		if row > 1 {
+		if row > 0 {
 			f := gui.EntryManager.Entries()[row-1]
 			gui.Preview.UpdateView(gui, f)
 		}

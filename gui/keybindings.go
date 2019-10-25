@@ -34,13 +34,14 @@ func globalKeybinding(gui *Gui, event *tcell.EventKey) {
 	// go to previous dir
 	case event.Rune() == 'h':
 		path := filepath.Dir(gui.InputPath.GetText())
-		row, _ := gui.EntryManager.GetSelection()
-		gui.HistoryManager.Save(row, path)
+		entry := gui.EntryManager.GetSelectEntry()
 		if path != "" {
 			gui.InputPath.SetText(path)
 			gui.EntryManager.SetEntries(path)
-			gui.EntryManager.Select(0, 0)
+			gui.EntryManager.Select(1, 0)
 			gui.EntryManager.SetOffset(0, 0)
+			entry = gui.EntryManager.GetSelectEntry()
+			gui.Preview.UpdateView(gui, entry)
 		}
 
 	// go to parent dir
@@ -54,10 +55,13 @@ func globalKeybinding(gui *Gui, event *tcell.EventKey) {
 
 		if entry.IsDir {
 			gui.HistoryManager.Save(row, filepath.Join(filepath.Dir(gui.InputPath.GetText()), entry.Path))
-			gui.InputPath.SetText(entry.Path)
-			gui.EntryManager.SetEntries(entry.Path)
-			gui.EntryManager.Select(0, 0)
-			gui.EntryManager.SetOffset(0, 0)
+			gui.InputPath.SetText(entry.PathName)
+			gui.EntryManager.SetEntries(entry.PathName)
+			gui.EntryManager.Select(1, 0)
+			gui.EntryManager.SetOffset(1, 0)
+			entry := gui.EntryManager.GetSelectEntry()
+			gui.Preview.UpdateView(gui, entry)
 		}
 	}
+
 }

@@ -21,6 +21,7 @@ var (
 type Entry struct {
 	Name       string
 	Path       string
+	PathName   string
 	Access     string
 	Create     string
 	Change     string
@@ -66,7 +67,8 @@ func (e *EntryManager) SetEntries(path string) []*Entry {
 
 	for _, file := range files {
 		// get file times
-		t, err := times.Stat(filepath.Join(path, file.Name()))
+		pathName := filepath.Join(path, file.Name())
+		t, err := times.Stat(pathName)
 		if err != nil {
 			log.Println(err)
 			continue
@@ -109,7 +111,8 @@ func (e *EntryManager) SetEntries(path string) []*Entry {
 			IsDir:      file.IsDir(),
 			Owner:      owner,
 			Group:      group,
-			Path:       filepath.Join(path, file.Name()),
+			PathName:   pathName,
+			Path:       path,
 			Viewable:   true,
 		})
 	}
@@ -184,6 +187,9 @@ func (e *EntryManager) SetColumns() {
 func (e *EntryManager) GetSelectEntry() *Entry {
 	row, _ := e.GetSelection()
 	if len(e.entries) == 0 {
+		return nil
+	}
+	if row < 1 {
 		return nil
 	}
 	return e.entries[row-1]
