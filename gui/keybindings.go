@@ -61,9 +61,11 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 		row, _ := gui.EntryManager.GetSelection()
 
 		if entry.IsDir {
+			if len(gui.EntryManager.SetEntries(entry.PathName)) == 0 {
+				return
+			}
 			gui.HistoryManager.Save(row, filepath.Join(filepath.Dir(gui.InputPath.GetText()), entry.Path))
 			gui.InputPath.SetText(entry.PathName)
-			gui.EntryManager.SetEntries(entry.PathName)
 			gui.EntryManager.Select(1, 0)
 			gui.EntryManager.SetOffset(1, 0)
 			entry := gui.EntryManager.GetSelectEntry()

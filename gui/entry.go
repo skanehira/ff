@@ -64,6 +64,10 @@ func (e *EntryManager) SetEntries(path string) []*Entry {
 		return nil
 	}
 
+	if len(files) == 0 {
+		return nil
+	}
+
 	var entries []*Entry
 	var access, change, create, perm, owner, group string
 
