@@ -185,11 +185,11 @@ func (gui *Gui) Run() (int, error) {
 
 		if key == tcell.KeyEnter {
 			path := gui.InputPath.GetText()
+			path = os.ExpandEnv(path)
+			gui.InputPath.SetText(path)
 			row, _ := gui.EntryManager.GetSelection()
 			gui.HistoryManager.Save(row, path)
 			gui.EntryManager.SetEntries(path)
-
-			gui.App.SetFocus(gui.EntryManager)
 		}
 
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
