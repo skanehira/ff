@@ -27,6 +27,9 @@ func NewPreview() *Preview {
 }
 
 func (p *Preview) UpdateView(g *Gui, entry *Entry) {
+	if entry == nil {
+		return
+	}
 	var text string
 	if !entry.IsDir {
 		text = p.Highlight(entry)
