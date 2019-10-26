@@ -1,16 +1,12 @@
 package gui
 
 import (
-	"errors"
-	"fmt"
 	"os"
-	"os/exec"
-	"path/filepath"
 
-	log "github.com/sirupsen/logrus"
+	"log"
+	"os/exec"
 
 	"github.com/gdamore/tcell"
-	"github.com/mitchellh/go-homedir"
 	"github.com/rivo/tview"
 )
 
@@ -47,36 +43,15 @@ func hasEntry(gui *Gui) bool {
 	return false
 }
 
-func initLogger() error {
-	// init logger
-	home, err := homedir.Dir()
-	if err != nil {
-		return errors.New(fmt.Sprintf("cannot get home dir, cause: %s", err))
-	}
-	logFile, err := os.OpenFile(filepath.Join(home, "ff.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
-
-	if err != nil {
-		return errors.New(fmt.Sprintf("cannot open log file, cause: %s", err))
-	}
-
-	log.SetOutput(logFile)
-
-	return nil
-}
-
 // New create new gui
-func New() (*Gui, error) {
-	if err := initLogger(); err != nil {
-		return nil, err
-	}
-
+func New() *Gui {
 	return &Gui{
 		EntryManager:   NewEntryManager(),
 		HistoryManager: NewHistoryManager(),
 		App:            tview.NewApplication(),
 		Preview:        NewPreview(),
 		Register:       &Register{},
-	}, nil
+	}
 }
 
 // ExecCmd execute command
@@ -98,11 +73,12 @@ func (gui *Gui) Stop() {
 }
 
 // Run run ff
-func (gui *Gui) Run() (int, error) {
+func (gui *Gui) Run() error {
 	// get current path
 	currentDir, err := os.Getwd()
 	if err != nil {
-		return 1, err
+		log.Printf("%s: %s\n", ErrGetCwd, err)
+		return err
 	}
 
 	gui.InputPath = tview.NewInputField().SetText(currentDir)
@@ -153,7 +129,7 @@ func (gui *Gui) Run() (int, error) {
 		case event.Rune() == 'e':
 			editor := os.Getenv("EDITOR")
 			if editor == "" {
-				log.Println("please set your editor to $EDITOR")
+				log.Println("$EDITOR is empty, please set $EDITOR")
 				return event
 			}
 
@@ -161,7 +137,7 @@ func (gui *Gui) Run() (int, error) {
 
 			gui.App.Suspend(func() {
 				if err := gui.ExecCmd(true, editor, entry.PathName); err != nil {
-					log.Printf("cannot edit: %s", err)
+					log.Printf("%s: %s\n", ErrEdit, err)
 				}
 			})
 		case event.Rune() == 'q':
@@ -207,8 +183,8 @@ func (gui *Gui) Run() (int, error) {
 
 	if err := gui.App.SetRoot(grid, true).SetFocus(gui.EntryManager).Run(); err != nil {
 		gui.App.Stop()
-		return 1, err
+		return err
 	}
 
-	return 0, nil
+	return nil
 }

@@ -54,6 +54,7 @@ func (p *Preview) Highlight(entry *Entry) string {
 	l = chroma.Coalesce(l)
 
 	// Determine formatter.
+	// TODO check terminal
 	f := formatters.Get("terminal256")
 	if f == nil {
 		f = formatters.Fallback

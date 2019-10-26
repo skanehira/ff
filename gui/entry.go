@@ -7,9 +7,10 @@ import (
 	"strconv"
 	"syscall"
 
+	"log"
+
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
-	log "github.com/sirupsen/logrus"
 	"gopkg.in/djherbis/times.v1"
 )
 
@@ -59,6 +60,7 @@ func (e *EntryManager) Entries() []*Entry {
 func (e *EntryManager) SetEntries(path string) []*Entry {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
+		log.Printf("%s: %s\n", ErrReadDir, err)
 		return nil
 	}
 
@@ -70,7 +72,7 @@ func (e *EntryManager) SetEntries(path string) []*Entry {
 		pathName := filepath.Join(path, file.Name())
 		t, err := times.Stat(pathName)
 		if err != nil {
-			log.Println(err)
+			log.Printf("%s: %s\n", ErrGetTime, err)
 			continue
 		}
 
