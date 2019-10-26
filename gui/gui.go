@@ -33,6 +33,7 @@ type Gui struct {
 	EntryManager   *EntryManager
 	Preview        *Preview
 	App            *tview.Application
+	Pages          *tview.Pages
 }
 
 func hasEntry(gui *Gui) bool {
@@ -71,6 +72,37 @@ func (gui *Gui) Stop() {
 	gui.App.Stop()
 }
 
+func (gui *Gui) Confirm(message, doneLabel string, primitive tview.Primitive, doneFunc func()) {
+	modal := tview.NewModal().
+		SetText(message).
+		AddButtons([]string{doneLabel, "Cancel"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			gui.CloseAndSwitchPanel("modal", primitive)
+			if buttonLabel == doneLabel {
+				gui.App.QueueUpdateDraw(func() {
+					doneFunc()
+				})
+			}
+		})
+	gui.Pages.AddAndSwitchToPage("modal", gui.Modal(modal, 50, 29), true).ShowPage("main")
+}
+
+func (gui *Gui) CloseAndSwitchPanel(removePrimitive string, primitive tview.Primitive) {
+	gui.Pages.RemovePage(removePrimitive).ShowPage("main")
+	gui.SwitchPanel(primitive)
+}
+
+func (gui *Gui) SwitchPanel(p tview.Primitive) *tview.Application {
+	return gui.App.SetFocus(p)
+}
+
+func (gui *Gui) Modal(p tview.Primitive, width, height int) tview.Primitive {
+	return tview.NewGrid().
+		SetColumns(0, width, 0).
+		SetRows(0, height, 0).
+		AddItem(p, 1, 1, 1, 1, 0, 0, true)
+}
+
 // Run run ff
 func (gui *Gui) Run() error {
 	// get current path
@@ -91,6 +123,9 @@ func (gui *Gui) Run() error {
 	grid.AddItem(gui.InputPath, 0, 0, 1, 2, 0, 0, true).
 		AddItem(gui.EntryManager, 1, 0, 1, 1, 0, 0, true).
 		AddItem(gui.Preview, 1, 1, 1, 1, 0, 0, true)
+
+	gui.Pages = tview.NewPages().
+		AddAndSwitchToPage("main", grid, true)
 
 	if err := gui.App.SetRoot(grid, true).SetFocus(gui.EntryManager).Run(); err != nil {
 		gui.App.Stop()

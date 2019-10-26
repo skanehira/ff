@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/gdamore/tcell"
+	"github.com/rivo/tview"
 )
 
 func (gui *Gui) SetKeybindings() {
@@ -88,8 +89,13 @@ func (gui *Gui) EntryManagerKeybinding() {
 			if !hasEntry(gui) {
 				return event
 			}
-			//gui.EntryManager.SetViewable(false)
-			gui.Register.MoveSources = append(gui.Register.MoveSources, gui.EntryManager.GetSelectEntry())
+
+			gui.Confirm("do you want to remove this?", "remove", gui.EntryManager, func() {
+				if err := gui.RemoveFile(); err != nil {
+					modal := tview.NewModal().SetText(err.Error()).AddButtons([]string{"yes"})
+					gui.Modal(modal, 50, 50)
+				}
+			})
 
 		// copy entry
 		case event.Rune() == 'y':
@@ -123,6 +129,10 @@ func (gui *Gui) EntryManagerKeybinding() {
 			}
 
 			entry := gui.EntryManager.GetSelectEntry()
+			if entry == nil {
+				log.Println("cannot get entry")
+				return event
+			}
 
 			gui.App.Suspend(func() {
 				if err := gui.ExecCmd(true, editor, entry.PathName); err != nil {
@@ -143,6 +153,29 @@ func (gui *Gui) EntryManagerKeybinding() {
 		}
 	})
 
+}
+
+func (gui *Gui) RemoveFile() error {
+	entry := gui.EntryManager.GetSelectEntry()
+	if entry == nil {
+		return nil
+	}
+
+	if entry.IsDir {
+		return nil
+	}
+
+	_, err := os.Stat(entry.PathName)
+	if os.IsNotExist(err) {
+		log.Println(err)
+		return err
+	}
+
+	if err := os.Remove(entry.PathName); err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
 }
 
 func (gui *Gui) InputPathKeybinding() {
