@@ -127,7 +127,7 @@ func (gui *Gui) Run() error {
 	gui.Pages = tview.NewPages().
 		AddAndSwitchToPage("main", grid, true)
 
-	if err := gui.App.SetRoot(grid, true).SetFocus(gui.EntryManager).Run(); err != nil {
+	if err := gui.App.SetRoot(gui.Pages, true).SetFocus(gui.EntryManager).Run(); err != nil {
 		gui.App.Stop()
 		return err
 	}
