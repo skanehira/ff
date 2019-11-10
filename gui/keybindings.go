@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/gdamore/tcell"
-	"github.com/rivo/tview"
 )
 
 func (gui *Gui) SetKeybindings() {
@@ -90,11 +89,19 @@ func (gui *Gui) EntryManagerKeybinding() {
 				return event
 			}
 
-			gui.Confirm("do you want to remove this?", "remove", gui.EntryManager, func() {
-				if err := gui.RemoveFile(); err != nil {
-					modal := tview.NewModal().SetText(err.Error()).AddButtons([]string{"yes"})
-					gui.Modal(modal, 50, 50)
+			gui.Confirm("do you want to remove this?", "yes", gui.EntryManager, func() error {
+				entry := gui.EntryManager.GetSelectEntry()
+				if entry == nil {
+					return nil
 				}
+
+				if err := gui.RemoveFile(entry); err != nil {
+					return err
+				}
+
+				path := gui.InputPath.GetText()
+				gui.EntryManager.SetEntries(path)
+				return nil
 			})
 
 		// copy entry
@@ -155,12 +162,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 
 }
 
-func (gui *Gui) RemoveFile() error {
-	entry := gui.EntryManager.GetSelectEntry()
-	if entry == nil {
-		return nil
-	}
-
+func (gui *Gui) RemoveFile(entry *Entry) error {
 	if entry.IsDir {
 		return nil
 	}
