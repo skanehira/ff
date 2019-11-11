@@ -125,6 +125,9 @@ func (gui *Gui) Run() error {
 	gui.HistoryManager.Save(0, currentDir)
 	gui.EntryManager.SetEntries(currentDir)
 
+	gui.EntryManager.Select(1, 0)
+	gui.Preview.UpdateView(gui, gui.EntryManager.GetSelectEntry())
+
 	gui.SetKeybindings()
 
 	grid := tview.NewGrid().SetRows(1, 0).SetColumns(0, 0)
