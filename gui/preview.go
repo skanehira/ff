@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 
 	"github.com/alecthomas/chroma"
 	"github.com/alecthomas/chroma/formatters"
@@ -33,10 +34,26 @@ func (p *Preview) UpdateView(g *Gui, entry *Entry) {
 	var text string
 	if !entry.IsDir {
 		text = p.Highlight(entry)
+	} else {
+		text = p.dirEntry(entry.PathName)
 	}
 	g.App.QueueUpdateDraw(func() {
 		p.SetText(text).ScrollToBeginning()
 	})
+}
+
+func (p *Preview) dirEntry(path string) string {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return err.Error()
+	}
+
+	var contents []string
+	for _, f := range files {
+		contents = append(contents, f.Name())
+	}
+
+	return strings.Join(contents, "\n")
 }
 
 func (p *Preview) Highlight(entry *Entry) string {
