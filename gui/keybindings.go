@@ -131,6 +131,8 @@ func (gui *Gui) EntryManagerKeybinding() {
 				return event
 			}
 
+			gui.EntryManager.SetEntries(gui.InputPath.GetText())
+
 		// edit file with $EDITOR
 		case event.Rune() == 'e':
 			editor := os.Getenv("EDITOR")
