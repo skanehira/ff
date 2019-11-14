@@ -73,17 +73,17 @@ func (gui *Gui) Stop() {
 	gui.App.Stop()
 }
 
-func (g *Gui) Message(message, page string) {
+func (gui *Gui) Message(message string, page tview.Primitive) {
 	doneLabel := "ok"
 	modal := tview.NewModal().
 		SetText(message).
 		AddButtons([]string{doneLabel}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			g.Pages.RemovePage("message")
-			g.Pages.SwitchToPage(page).ShowPage("main")
+			gui.Pages.RemovePage("message").SwitchToPage("main")
+			gui.App.SetFocus(page)
 		})
 
-	g.Pages.AddAndSwitchToPage("message", g.Modal(modal, 80, 29), true).ShowPage("main")
+	gui.Pages.AddAndSwitchToPage("message", gui.Modal(modal, 80, 29), true).ShowPage("main")
 }
 
 func (gui *Gui) Confirm(message, doneLabel string, page tview.Primitive, doneFunc func() error) {
@@ -92,12 +92,13 @@ func (gui *Gui) Confirm(message, doneLabel string, page tview.Primitive, doneFun
 		AddButtons([]string{doneLabel, "cancel"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			gui.Pages.RemovePage("message").SwitchToPage("main")
-			gui.App.SetFocus(page)
 
 			if buttonLabel == doneLabel {
 				gui.App.QueueUpdateDraw(func() {
 					if err := doneFunc(); err != nil {
-						gui.Message(err.Error(), "main")
+						gui.Message(err.Error(), page)
+					} else {
+						gui.App.SetFocus(page)
 					}
 				})
 			}
