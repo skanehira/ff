@@ -1,12 +1,17 @@
 package gui
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/gdamore/tcell"
 	"github.com/skanehira/ff/system"
+)
+
+var (
+	ErrNoDirName = errors.New("no directory name")
 )
 
 func (gui *Gui) SetKeybindings() {
@@ -83,9 +88,9 @@ func (gui *Gui) EntryManagerKeybinding() {
 
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		gui.GlobalKeybinding(event)
-		switch {
+		switch event.Rune() {
 		// cut entry
-		case event.Rune() == 'd':
+		case 'd':
 			if !hasEntry(gui) {
 				return event
 			}
@@ -106,7 +111,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 			})
 
 		// copy entry
-		case event.Rune() == 'y':
+		case 'y':
 			if !hasEntry(gui) {
 				return event
 			}
@@ -122,7 +127,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 			}
 
 		// paste entry
-		case event.Rune() == 'p':
+		case 'p':
 			source := gui.Register.CopySource
 			target := filepath.Join(gui.InputPath.GetText(), source.Name)
 
@@ -134,7 +139,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 			gui.EntryManager.SetEntries(gui.InputPath.GetText())
 
 		// edit file with $EDITOR
-		case event.Rune() == 'e':
+		case 'e':
 			editor := os.Getenv("EDITOR")
 			if editor == "" {
 				log.Println("$EDITOR is empty, please set $EDITOR")
@@ -152,7 +157,22 @@ func (gui *Gui) EntryManagerKeybinding() {
 					log.Printf("%s: %s\n", ErrEdit, err)
 				}
 			})
-		case event.Rune() == 'q':
+		case 'm':
+			gui.Form([]string{"name"}, "make", "make direcotry", "make_directory", gui.EntryManager,
+				7, func(values map[string]string) error {
+					name := values["name"]
+					if name == "" {
+						return ErrNoDirName
+					}
+
+					if err := system.MakeDir(name); err != nil {
+						return err
+					}
+
+					gui.EntryManager.SetEntries(gui.InputPath.GetText())
+					return nil
+				})
+		case 'q':
 			gui.Stop()
 		}
 

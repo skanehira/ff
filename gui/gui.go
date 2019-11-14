@@ -114,6 +114,56 @@ func (gui *Gui) Modal(p tview.Primitive, width, height int) tview.Primitive {
 		AddItem(p, 1, 1, 1, 1, 0, 0, true)
 }
 
+func (gui *Gui) FocusPanel(p tview.Primitive) {
+	gui.App.SetFocus(p)
+}
+
+func (gui *Gui) Form(fieldLabel []string, doneLabel, title, pageName string, panel tview.Primitive,
+	height int, doneFunc func(values map[string]string) error) {
+
+	if gui.Pages.HasPage(pageName) {
+		gui.Pages.ShowPage(pageName)
+		return
+	}
+
+	form := tview.NewForm()
+	for _, label := range fieldLabel {
+		form.AddInputField(label, "", 0, nil, nil)
+	}
+
+	form.AddButton(doneLabel, func() {
+		values := make(map[string]string)
+
+		for _, label := range fieldLabel {
+			item := form.GetFormItemByLabel(label)
+			switch item.(type) {
+			case *tview.InputField:
+				input, ok := item.(*tview.InputField)
+				if ok {
+					values[label] = os.ExpandEnv(input.GetText())
+				}
+			}
+		}
+
+		if err := doneFunc(values); err != nil {
+			gui.Message(err.Error(), gui.EntryManager)
+			return
+		}
+
+		gui.Pages.RemovePage(pageName)
+		gui.FocusPanel(panel)
+	}).
+		AddButton("cancel", func() {
+			gui.Pages.RemovePage(pageName)
+			gui.FocusPanel(panel)
+		})
+
+	form.SetBorder(true).SetTitle(title).
+		SetTitleAlign(tview.AlignLeft)
+
+	gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(form, 0, height), true).ShowPage("main")
+}
+
 // Run run ff
 func (gui *Gui) Run() error {
 	// get current path
