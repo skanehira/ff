@@ -47,6 +47,7 @@ func hasEntry(gui *Gui) bool {
 // New create new gui
 func New() *Gui {
 	return &Gui{
+		InputPath:      tview.NewInputField().SetLabel("path").SetLabelWidth(5),
 		EntryManager:   NewEntryManager(),
 		HistoryManager: NewHistoryManager(),
 		App:            tview.NewApplication(),
@@ -122,7 +123,7 @@ func (gui *Gui) Run() error {
 		return err
 	}
 
-	gui.InputPath = tview.NewInputField().SetText(currentDir)
+	gui.InputPath.SetText(currentDir)
 
 	gui.HistoryManager.Save(0, currentDir)
 	gui.EntryManager.SetEntries(currentDir)
