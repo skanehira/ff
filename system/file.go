@@ -34,3 +34,16 @@ func CopyFile(src, target string) error {
 
 	return nil
 }
+
+func RemoveFile(file string) error {
+	_, err := os.Stat(file)
+	if os.IsNotExist(err) {
+		return err
+	}
+
+	if err := os.Remove(file); err != nil {
+		return err
+	}
+
+	return nil
+}

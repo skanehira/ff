@@ -101,8 +101,14 @@ func (gui *Gui) EntryManagerKeybinding() {
 					return nil
 				}
 
-				if err := gui.RemoveFile(entry); err != nil {
-					return err
+				if entry.IsDir {
+					if err := system.RemoveDirAll(entry.PathName); err != nil {
+						return err
+					}
+				} else {
+					if err := system.RemoveFile(entry.PathName); err != nil {
+						return err
+					}
 				}
 
 				path := gui.InputPath.GetText()
@@ -186,24 +192,6 @@ func (gui *Gui) EntryManagerKeybinding() {
 		}
 	})
 
-}
-
-func (gui *Gui) RemoveFile(entry *Entry) error {
-	if entry.IsDir {
-		return nil
-	}
-
-	_, err := os.Stat(entry.PathName)
-	if os.IsNotExist(err) {
-		log.Println(err)
-		return err
-	}
-
-	if err := os.Remove(entry.PathName); err != nil {
-		log.Println(err)
-		return err
-	}
-	return nil
 }
 
 func (gui *Gui) InputPathKeybinding() {
