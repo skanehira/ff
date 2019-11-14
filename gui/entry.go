@@ -20,9 +20,9 @@ var (
 
 // Entry file or dir info
 type Entry struct {
-	Name       string
-	Path       string
-	PathName   string
+	Name       string // file name
+	Path       string // file path
+	PathName   string // file's path and name
 	Access     string
 	Create     string
 	Change     string
@@ -187,8 +187,6 @@ func (e *EntryManager) SetColumns() {
 	}
 
 	e.UpdateColor()
-
-	//table.Select(0, 0)
 }
 
 // GetSelectEntry get selected entry
@@ -205,15 +203,11 @@ func (e *EntryManager) GetSelectEntry() *Entry {
 
 func (e *EntryManager) UpdateColor() {
 	rowNum := e.GetRowCount()
-	row, _ := e.GetSelection()
 
 	e.GetSelection()
-	for i := 1; i < rowNum-1; i++ {
+	for i := 1; i < rowNum; i++ {
 		color := tcell.ColorWhite
-
-		if i == row {
-			color = tcell.ColorYellow
-		} else if e.Entries()[i].IsDir {
+		if e.Entries()[i-1].IsDir {
 			color = tcell.ColorDarkCyan
 		}
 

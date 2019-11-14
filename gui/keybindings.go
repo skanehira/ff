@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/gdamore/tcell"
+	"github.com/skanehira/ff/system"
 )
 
 func (gui *Gui) SetKeybindings() {
@@ -115,21 +116,20 @@ func (gui *Gui) EntryManagerKeybinding() {
 			entry := m.GetSelectEntry()
 			gui.Register.CopySource = entry
 
-		// paset entry
+			row, _ := m.GetSelection()
+			for i := 0; i < 5; i++ {
+				m.GetCell(row, i).SetTextColor(tcell.ColorYellow)
+			}
+
+		// paste entry
 		case event.Rune() == 'p':
-			//for _, source := range gui.Register.MoveSources {
-			//	dest := filepath.Join(gui.InputPath.GetText(), filepath.Base(source))
-			//	if err := os.Rename(source, dest); err != nil {
-			//		log.Printf("cannot copy or move the file: %s", err)
-			//	}
-			//}
+			source := gui.Register.CopySource
+			target := filepath.Join(gui.InputPath.GetText(), source.Name)
 
-			// TODO implement file copy
-			//for _, source := range gui.Register.CopyResources {
-			//dest := filepath.Join(gui.InputPath.GetText(), filepath.Base(source))
-			//}
-
-			//gui.EntryManager.SetEntries(gui.InputPath.GetText())
+			if err := system.CopyFile(source.PathName, target); err != nil {
+				gui.Message(err.Error(), "main")
+				return event
+			}
 
 		// edit file with $EDITOR
 		case event.Rune() == 'e':
