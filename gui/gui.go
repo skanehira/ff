@@ -9,10 +9,11 @@ import (
 	"github.com/rivo/tview"
 )
 
-// Register memory resources
+// Register copy/paste file resource
 type Register struct {
 	MoveSources []*Entry
 	CopySources []*Entry
+	CopySource  *Entry
 }
 
 // ClearMoveResources clear resources

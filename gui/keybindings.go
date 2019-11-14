@@ -109,7 +109,11 @@ func (gui *Gui) EntryManagerKeybinding() {
 			if !hasEntry(gui) {
 				return event
 			}
-			gui.Register.CopySources = append(gui.Register.CopySources, gui.EntryManager.GetSelectEntry())
+
+			m := gui.EntryManager
+			m.UpdateColor()
+			entry := m.GetSelectEntry()
+			gui.Register.CopySource = entry
 
 		// paset entry
 		case event.Rune() == 'p':

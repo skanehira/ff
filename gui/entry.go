@@ -170,11 +170,11 @@ func (e *EntryManager) SetColumns() {
 	for _, entry := range e.entries {
 		if entry.Viewable {
 			if entry.IsDir {
-				table.SetCell(i+1, 0, tview.NewTableCell(entry.Name).SetTextColor(tcell.ColorDarkCyan))
-				table.SetCell(i+1, 1, tview.NewTableCell(entry.Size).SetTextColor(tcell.ColorDarkCyan))
-				table.SetCell(i+1, 2, tview.NewTableCell(entry.Permission).SetTextColor(tcell.ColorDarkCyan))
-				table.SetCell(i+1, 3, tview.NewTableCell(entry.Owner).SetTextColor(tcell.ColorDarkCyan))
-				table.SetCell(i+1, 4, tview.NewTableCell(entry.Group).SetTextColor(tcell.ColorDarkCyan))
+				table.SetCell(i+1, 0, tview.NewTableCell(entry.Name))
+				table.SetCell(i+1, 1, tview.NewTableCell(entry.Size))
+				table.SetCell(i+1, 2, tview.NewTableCell(entry.Permission))
+				table.SetCell(i+1, 3, tview.NewTableCell(entry.Owner))
+				table.SetCell(i+1, 4, tview.NewTableCell(entry.Group))
 			} else {
 				table.SetCell(i+1, 0, tview.NewTableCell(entry.Name))
 				table.SetCell(i+1, 1, tview.NewTableCell(entry.Size))
@@ -185,6 +185,8 @@ func (e *EntryManager) SetColumns() {
 			i++
 		}
 	}
+
+	e.UpdateColor()
 
 	//table.Select(0, 0)
 }
@@ -199,4 +201,25 @@ func (e *EntryManager) GetSelectEntry() *Entry {
 		return nil
 	}
 	return e.entries[row-1]
+}
+
+func (e *EntryManager) UpdateColor() {
+	rowNum := e.GetRowCount()
+	row, _ := e.GetSelection()
+
+	e.GetSelection()
+	for i := 1; i < rowNum-1; i++ {
+		color := tcell.ColorWhite
+
+		if i == row {
+			color = tcell.ColorYellow
+		} else if e.Entries()[i].IsDir {
+			color = tcell.ColorDarkCyan
+		}
+
+		for j := 0; j < 5; j++ {
+			e.GetCell(i, j).SetTextColor(color)
+		}
+	}
+
 }
