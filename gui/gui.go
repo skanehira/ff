@@ -118,23 +118,18 @@ func (gui *Gui) FocusPanel(p tview.Primitive) {
 	gui.App.SetFocus(p)
 }
 
-func (gui *Gui) Form(fieldLabel []string, doneLabel, title, pageName string, panel tview.Primitive,
+func (gui *Gui) Form(fieldLabel map[string]string, doneLabel, title, pageName string, panel tview.Primitive,
 	height int, doneFunc func(values map[string]string) error) {
 
-	if gui.Pages.HasPage(pageName) {
-		gui.Pages.ShowPage(pageName)
-		return
-	}
-
 	form := tview.NewForm()
-	for _, label := range fieldLabel {
-		form.AddInputField(label, "", 0, nil, nil)
+	for k, v := range fieldLabel {
+		form.AddInputField(k, v, 0, nil, nil)
 	}
 
 	form.AddButton(doneLabel, func() {
 		values := make(map[string]string)
 
-		for _, label := range fieldLabel {
+		for label, _ := range fieldLabel {
 			item := form.GetFormItemByLabel(label)
 			switch item.(type) {
 			case *tview.InputField:
@@ -150,8 +145,8 @@ func (gui *Gui) Form(fieldLabel []string, doneLabel, title, pageName string, pan
 			return
 		}
 
-		gui.Pages.RemovePage(pageName)
-		gui.FocusPanel(panel)
+		defer gui.FocusPanel(panel)
+		defer gui.Pages.RemovePage(pageName)
 	}).
 		AddButton("cancel", func() {
 			gui.Pages.RemovePage(pageName)

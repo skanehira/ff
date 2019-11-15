@@ -136,14 +136,22 @@ func (gui *Gui) EntryManagerKeybinding() {
 		// paste entry
 		case 'p':
 			source := gui.Register.CopySource
-			target := filepath.Join(gui.InputPath.GetText(), source.Name)
 
-			if err := system.CopyFile(source.PathName, target); err != nil {
-				gui.Message(err.Error(), gui.EntryManager)
-				return event
-			}
+			gui.Form(map[string]string{"name": source.Name}, "paste", "new name", "new_name", gui.EntryManager,
+				7, func(values map[string]string) error {
+					name := values["name"]
+					if name == "" {
+						return ErrNoFileName
+					}
 
-			gui.EntryManager.SetEntries(gui.InputPath.GetText())
+					target := filepath.Join(gui.InputPath.GetText(), name)
+					if err := system.CopyFile(source.PathName, target); err != nil {
+						return err
+					}
+
+					gui.EntryManager.SetEntries(gui.InputPath.GetText())
+					return nil
+				})
 
 		// edit file with $EDITOR
 		case 'e':
@@ -165,7 +173,8 @@ func (gui *Gui) EntryManagerKeybinding() {
 				}
 			})
 		case 'm':
-			gui.Form([]string{"name"}, "create", "new direcotry", "create_directory", gui.EntryManager,
+			gui.Form(map[string]string{"name": ""}, "create", "new direcotry",
+				"create_directory", gui.EntryManager,
 				7, func(values map[string]string) error {
 					name := values["name"]
 					if name == "" {
@@ -180,7 +189,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 					return nil
 				})
 		case 'n':
-			gui.Form([]string{"name"}, "create", "new file", "create_directory", gui.EntryManager,
+			gui.Form(map[string]string{"name": ""}, "create", "new file", "create_directory", gui.EntryManager,
 				7, func(values map[string]string) error {
 					name := values["name"]
 					if name == "" {
