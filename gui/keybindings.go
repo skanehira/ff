@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	ErrNoDirName = errors.New("no directory name")
+	ErrNoDirName  = errors.New("no directory name")
+	ErrNoFileName = errors.New("no file name")
 )
 
 func (gui *Gui) SetKeybindings() {
@@ -164,7 +165,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 				}
 			})
 		case 'm':
-			gui.Form([]string{"name"}, "make", "make direcotry", "make_directory", gui.EntryManager,
+			gui.Form([]string{"name"}, "create", "new direcotry", "create_directory", gui.EntryManager,
 				7, func(values map[string]string) error {
 					name := values["name"]
 					if name == "" {
@@ -172,6 +173,21 @@ func (gui *Gui) EntryManagerKeybinding() {
 					}
 
 					if err := system.MakeDir(name); err != nil {
+						return err
+					}
+
+					gui.EntryManager.SetEntries(gui.InputPath.GetText())
+					return nil
+				})
+		case 'n':
+			gui.Form([]string{"name"}, "create", "new file", "create_directory", gui.EntryManager,
+				7, func(values map[string]string) error {
+					name := values["name"]
+					if name == "" {
+						return ErrNoFileName
+					}
+
+					if err := system.NewFile(name); err != nil {
 						return err
 					}
 
