@@ -172,7 +172,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 						return ErrNoDirName
 					}
 
-					if err := system.MakeDir(name); err != nil {
+					if err := system.NewDir(name); err != nil {
 						return err
 					}
 
