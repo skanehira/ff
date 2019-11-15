@@ -181,7 +181,8 @@ func (gui *Gui) EntryManagerKeybinding() {
 						return ErrNoDirName
 					}
 
-					if err := system.NewDir(name); err != nil {
+					target := filepath.Join(gui.InputPath.GetText(), name)
+					if err := system.NewDir(target); err != nil {
 						return err
 					}
 
@@ -196,7 +197,8 @@ func (gui *Gui) EntryManagerKeybinding() {
 						return ErrNoFileName
 					}
 
-					if err := system.NewFile(name); err != nil {
+					target := filepath.Join(gui.InputPath.GetText(), name)
+					if err := system.NewFile(target); err != nil {
 						return err
 					}
 
