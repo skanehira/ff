@@ -13,8 +13,7 @@ var (
 )
 
 func CopyFile(src, target string) error {
-	_, err := os.Stat(src)
-	if !os.IsExist(err) {
+	if isExist(target) {
 		return ErrFileExists
 	}
 
