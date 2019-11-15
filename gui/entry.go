@@ -26,7 +26,7 @@ type Entry struct {
 	Access     string
 	Create     string
 	Change     string
-	Size       string
+	Size       int64
 	Permission string
 	Owner      string
 	Group      string
@@ -112,7 +112,7 @@ func (e *EntryManager) SetEntries(path string) []*Entry {
 			Access:     access,
 			Create:     create,
 			Change:     change,
-			Size:       strconv.Itoa(int(file.Size())),
+			Size:       file.Size(),
 			Permission: perm,
 			IsDir:      file.IsDir(),
 			Owner:      owner,
@@ -168,16 +168,17 @@ func (e *EntryManager) SetColumns() {
 	e.SetHeader()
 	var i int
 	for _, entry := range e.entries {
+		size := strconv.FormatInt(entry.Size, 10)
 		if entry.Viewable {
 			if entry.IsDir {
 				table.SetCell(i+1, 0, tview.NewTableCell(entry.Name))
-				table.SetCell(i+1, 1, tview.NewTableCell(entry.Size))
+				table.SetCell(i+1, 1, tview.NewTableCell(size))
 				table.SetCell(i+1, 2, tview.NewTableCell(entry.Permission))
 				table.SetCell(i+1, 3, tview.NewTableCell(entry.Owner))
 				table.SetCell(i+1, 4, tview.NewTableCell(entry.Group))
 			} else {
 				table.SetCell(i+1, 0, tview.NewTableCell(entry.Name))
-				table.SetCell(i+1, 1, tview.NewTableCell(entry.Size))
+				table.SetCell(i+1, 1, tview.NewTableCell(size))
 				table.SetCell(i+1, 2, tview.NewTableCell(entry.Permission))
 				table.SetCell(i+1, 3, tview.NewTableCell(entry.Owner))
 				table.SetCell(i+1, 4, tview.NewTableCell(entry.Group))

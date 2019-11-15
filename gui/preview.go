@@ -31,8 +31,13 @@ func (p *Preview) UpdateView(g *Gui, entry *Entry) {
 	if entry == nil {
 		return
 	}
+
 	var text string
-	if !entry.IsDir {
+	// TODO configrable max file size with option
+	// max size is 2MB
+	if entry.Size > 200000 && !entry.IsDir {
+		text = "file too big"
+	} else if !entry.IsDir {
 		text = p.Highlight(entry)
 	} else {
 		text = p.dirEntry(entry.PathName)
