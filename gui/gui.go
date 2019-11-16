@@ -97,6 +97,7 @@ func (gui *Gui) Confirm(message, doneLabel string, page tview.Primitive, doneFun
 			if buttonLabel == doneLabel {
 				gui.App.QueueUpdateDraw(func() {
 					if err := doneFunc(); err != nil {
+						log.Println(err)
 						gui.Message(err.Error(), page)
 					} else {
 						gui.App.SetFocus(page)
@@ -141,6 +142,7 @@ func (gui *Gui) Form(fieldLabel map[string]string, doneLabel, title, pageName st
 		}
 
 		if err := doneFunc(values); err != nil {
+			log.Println(err)
 			gui.Message(err.Error(), gui.EntryManager)
 			return
 		}

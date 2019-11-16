@@ -3,6 +3,7 @@ package gui
 import (
 	"bytes"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 	"strings"
 
@@ -50,6 +51,7 @@ func (p *Preview) UpdateView(g *Gui, entry *Entry) {
 func (p *Preview) dirEntry(path string) string {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
+		log.Println(err)
 		return err.Error()
 	}
 
@@ -65,6 +67,7 @@ func (p *Preview) Highlight(entry *Entry) string {
 	// Determine lexer.
 	b, err := ioutil.ReadFile(entry.PathName)
 	if err != nil {
+		log.Println(err)
 		return err.Error()
 	}
 
@@ -93,12 +96,14 @@ func (p *Preview) Highlight(entry *Entry) string {
 
 	it, err := l.Tokenise(nil, string(b))
 	if err != nil {
+		log.Println(err)
 		return err.Error()
 	}
 
 	var buf = bytes.Buffer{}
 
 	if err := f.Format(&buf, s, it); err != nil {
+		log.Println(err)
 		return err.Error()
 	}
 

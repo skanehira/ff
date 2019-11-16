@@ -100,10 +100,12 @@ func (gui *Gui) EntryManagerKeybinding() {
 
 				if entry.IsDir {
 					if err := system.RemoveDirAll(entry.PathName); err != nil {
+						log.Println(err)
 						return err
 					}
 				} else {
 					if err := system.RemoveFile(entry.PathName); err != nil {
+						log.Println(err)
 						return err
 					}
 				}
@@ -142,6 +144,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 
 					target := filepath.Join(gui.InputPath.GetText(), name)
 					if err := system.CopyFile(source.PathName, target); err != nil {
+						log.Println(err)
 						return err
 					}
 
@@ -179,6 +182,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 
 					target := filepath.Join(gui.InputPath.GetText(), name)
 					if err := system.NewDir(target); err != nil {
+						log.Println(err)
 						return err
 					}
 
@@ -195,6 +199,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 
 					target := filepath.Join(gui.InputPath.GetText(), name)
 					if err := system.NewFile(target); err != nil {
+						log.Println(err)
 						return err
 					}
 

@@ -3,6 +3,7 @@ package system
 import (
 	"errors"
 	"io"
+	"log"
 	"os"
 )
 
@@ -19,6 +20,7 @@ func CopyFile(src, target string) error {
 
 	s, err := os.Open(src)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	defer s.Close()
@@ -30,6 +32,7 @@ func CopyFile(src, target string) error {
 	defer t.Close()
 
 	if _, err := io.Copy(t, s); err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -42,6 +45,7 @@ func RemoveFile(file string) error {
 	}
 
 	if err := os.Remove(file); err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -55,6 +59,7 @@ func NewFile(file string) error {
 
 	f, err := os.Create(file)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	defer f.Close()
@@ -63,5 +68,8 @@ func NewFile(file string) error {
 
 func isExist(name string) bool {
 	_, err := os.Stat(name)
+	if err != nil {
+		log.Println(err)
+	}
 	return !os.IsNotExist(err)
 }
