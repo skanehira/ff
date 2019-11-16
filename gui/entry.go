@@ -58,6 +58,8 @@ func (e *EntryManager) Entries() []*Entry {
 
 // SetEntries set entries
 func (e *EntryManager) SetEntries(path string) []*Entry {
+	var entries []*Entry
+
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Printf("%s: %s\n", ErrReadDir, err)
@@ -65,10 +67,11 @@ func (e *EntryManager) SetEntries(path string) []*Entry {
 	}
 
 	if len(files) == 0 {
+		e.entries = entries
+		e.SetColumns()
 		return nil
 	}
 
-	var entries []*Entry
 	var access, change, create, perm, owner, group string
 
 	for _, file := range files {
@@ -160,10 +163,6 @@ func (e *EntryManager) SetHeader() {
 
 // SetColumns set entries
 func (e *EntryManager) SetColumns() {
-	if len(e.entries) == 0 {
-		return
-	}
-
 	table := e.Clear()
 	e.SetHeader()
 	var i int

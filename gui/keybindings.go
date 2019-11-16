@@ -60,23 +60,19 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 
 	// go to parent dir
 	case event.Rune() == 'l':
-		if !hasEntry(gui) {
-			return
-		}
-
 		entry := gui.EntryManager.GetSelectEntry()
-		row, _ := gui.EntryManager.GetSelection()
+		if entry != nil {
+			row, _ := gui.EntryManager.GetSelection()
 
-		if entry.IsDir {
-			if len(gui.EntryManager.SetEntries(entry.PathName)) == 0 {
-				return
+			if entry.IsDir {
+				gui.EntryManager.SetEntries(entry.PathName)
+				gui.HistoryManager.Save(row, filepath.Join(filepath.Dir(gui.InputPath.GetText()), entry.Path))
+				gui.InputPath.SetText(entry.PathName)
+				gui.EntryManager.Select(1, 0)
+				gui.EntryManager.SetOffset(1, 0)
+				entry := gui.EntryManager.GetSelectEntry()
+				gui.Preview.UpdateView(gui, entry)
 			}
-			gui.HistoryManager.Save(row, filepath.Join(filepath.Dir(gui.InputPath.GetText()), entry.Path))
-			gui.InputPath.SetText(entry.PathName)
-			gui.EntryManager.Select(1, 0)
-			gui.EntryManager.SetOffset(1, 0)
-			entry := gui.EntryManager.GetSelectEntry()
-			gui.Preview.UpdateView(gui, entry)
 		}
 	}
 }
