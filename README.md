@@ -4,6 +4,8 @@ This is file manager on terminal written in Go.
 # Features
 - Preview file/directory
 - copy/paste file
+- make a new file/directory
+- rename a file/directory
 - can edit file using `$EDITOR`
 
 # Support OS
@@ -27,4 +29,6 @@ $ go install
 | files | `y`   | copy selected file             |
 | files | `p`   | paste copy file to current dir |
 | files | `d`   | deletee selected file or dir   |
-| files | `m`   | make a dir                     |
+| files | `m`   | make a new dir                 |
+| files | `n`   | make a new file                |
+| files | `r`   | rename a dir or file           |
