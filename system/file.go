@@ -66,6 +66,23 @@ func NewFile(file string) error {
 	return nil
 }
 
+func Rename(oldpath, newpath string) error {
+	if !isExist(oldpath) {
+		return ErrFileNotExists
+	}
+
+	if isExist(newpath) {
+		return ErrFileExists
+	}
+
+	if err := os.Rename(oldpath, newpath); err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
 func isExist(name string) bool {
 	_, err := os.Stat(name)
 	if err != nil {

@@ -11,8 +11,11 @@ import (
 )
 
 var (
-	ErrNoDirName  = errors.New("no directory name")
-	ErrNoFileName = errors.New("no file name")
+	ErrNoDirName       = errors.New("no directory name")
+	ErrNoFileName      = errors.New("no file name")
+	ErrNoFileOrDirName = errors.New("no file or directory name")
+	ErrNoFileOrDir     = errors.New("no file or directory")
+	ErrNoNewName       = errors.New("no new name")
 )
 
 func (gui *Gui) SetKeybindings() {
@@ -139,7 +142,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 				7, func(values map[string]string) error {
 					name := values["name"]
 					if name == "" {
-						return ErrNoFileName
+						return ErrNoNewName
 					}
 
 					target := filepath.Join(gui.InputPath.GetText(), name)
@@ -189,12 +192,36 @@ func (gui *Gui) EntryManagerKeybinding() {
 					gui.EntryManager.SetEntries(gui.InputPath.GetText())
 					return nil
 				})
-		case 'n':
-			gui.Form(map[string]string{"name": ""}, "create", "new file", "create_directory", gui.EntryManager,
+		case 'r':
+			gui.Form(map[string]string{"new name": ""}, "rename", "new name", "rename", gui.EntryManager,
 				7, func(values map[string]string) error {
-					name := values["name"]
+					name := values["new name"]
 					if name == "" {
 						return ErrNoFileName
+					}
+
+					current := gui.InputPath.GetText()
+
+					entry := gui.EntryManager.GetSelectEntry()
+					if entry == nil {
+						return ErrNoFileOrDir
+					}
+
+					target := filepath.Join(current, name)
+					if err := system.Rename(entry.PathName, target); err != nil {
+						return err
+					}
+
+					gui.EntryManager.SetEntries(gui.InputPath.GetText())
+					return nil
+				})
+
+		case 'n':
+			gui.Form(map[string]string{"name": ""}, "create", "new file", "create_file", gui.EntryManager,
+				7, func(values map[string]string) error {
+					name := values["new name"]
+					if name == "" {
+						return ErrNoFileOrDirName
 					}
 
 					target := filepath.Join(gui.InputPath.GetText(), name)
