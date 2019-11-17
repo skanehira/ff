@@ -219,7 +219,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 		case 'n':
 			gui.Form(map[string]string{"name": ""}, "create", "new file", "create_file", gui.EntryManager,
 				7, func(values map[string]string) error {
-					name := values["new name"]
+					name := values["name"]
 					if name == "" {
 						return ErrNoFileOrDirName
 					}
