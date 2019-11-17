@@ -104,6 +104,7 @@ func (gui *Gui) Confirm(message, doneLabel string, page tview.Primitive, doneFun
 					}
 				})
 			}
+			gui.App.SetFocus(page)
 		})
 	gui.Pages.AddAndSwitchToPage("confirm", gui.Modal(modal, 50, 29), true).ShowPage("main")
 }
