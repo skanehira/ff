@@ -56,8 +56,8 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 			gui.InputPath.SetText(path)
 			gui.EntryManager.SetEntries(path)
 			gui.EntryManager.SetOffset(0, 0)
-			entry = gui.EntryManager.GetSelectEntry()
 			if gui.enablePreview {
+				entry = gui.EntryManager.GetSelectEntry()
 				gui.Preview.UpdateView(gui, entry)
 			}
 		}
@@ -76,11 +76,11 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 				count := gui.EntryManager.GetRowCount()
 				if row > count {
 					gui.EntryManager.Select(count-1, 0)
-					gui.EntryManager.Select(0, 0)
 				}
 
-				entry := gui.EntryManager.GetSelectEntry()
 				if gui.enablePreview {
+					entry := gui.EntryManager.GetSelectEntry()
+
 					gui.Preview.UpdateView(gui, entry)
 				}
 			}
@@ -182,6 +182,11 @@ func (gui *Gui) EntryManagerKeybinding() {
 					log.Printf("%s: %s\n", ErrEdit, err)
 				}
 			})
+
+			if gui.enablePreview {
+				entry := gui.EntryManager.GetSelectEntry()
+				gui.Preview.UpdateView(gui, entry)
+			}
 		case 'm':
 			gui.Form(map[string]string{"name": ""}, "create", "new direcotry",
 				"create_directory", gui.EntryManager,
@@ -250,8 +255,8 @@ func (gui *Gui) EntryManagerKeybinding() {
 
 	gui.EntryManager.SetSelectionChangedFunc(func(row, col int) {
 		if row > 0 {
-			f := gui.EntryManager.Entries()[row-1]
 			if gui.enablePreview {
+				f := gui.EntryManager.Entries()[row-1]
 				gui.Preview.UpdateView(gui, f)
 			}
 		}
