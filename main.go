@@ -15,7 +15,8 @@ import (
 )
 
 var (
-	enableLog = flag.Bool("log", false, "enable log")
+	enableLog     = flag.Bool("log", false, "enable log")
+	enablePreview = flag.Bool("preview", false, "enable preview panel")
 )
 
 var (
@@ -29,7 +30,7 @@ func run() int {
 		return 1
 	}
 
-	if err := gui.New().Run(); err != nil {
+	if err := gui.New(*enablePreview).Run(); err != nil {
 		return 1
 	}
 

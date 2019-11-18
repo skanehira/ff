@@ -57,7 +57,9 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 			gui.EntryManager.SetEntries(path)
 			gui.EntryManager.SetOffset(0, 0)
 			entry = gui.EntryManager.GetSelectEntry()
-			gui.Preview.UpdateView(gui, entry)
+			if gui.enablePreview {
+				gui.Preview.UpdateView(gui, entry)
+			}
 		}
 
 	// go to parent dir
@@ -78,7 +80,9 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 				}
 
 				entry := gui.EntryManager.GetSelectEntry()
-				gui.Preview.UpdateView(gui, entry)
+				if gui.enablePreview {
+					gui.Preview.UpdateView(gui, entry)
+				}
 			}
 		}
 	}
@@ -247,7 +251,9 @@ func (gui *Gui) EntryManagerKeybinding() {
 	gui.EntryManager.SetSelectionChangedFunc(func(row, col int) {
 		if row > 0 {
 			f := gui.EntryManager.Entries()[row-1]
-			gui.Preview.UpdateView(gui, f)
+			if gui.enablePreview {
+				gui.Preview.UpdateView(gui, f)
+			}
 		}
 	})
 

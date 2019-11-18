@@ -28,6 +28,7 @@ func (r *Register) ClearCopyResources() {
 
 // Gui gui have some manager
 type Gui struct {
+	enablePreview  bool
 	InputPath      *tview.InputField
 	Register       *Register
 	HistoryManager *HistoryManager
@@ -45,15 +46,21 @@ func hasEntry(gui *Gui) bool {
 }
 
 // New create new gui
-func New() *Gui {
-	return &Gui{
+func New(enablePreview bool) *Gui {
+	gui := &Gui{
+		enablePreview:  enablePreview,
 		InputPath:      tview.NewInputField().SetLabel("path").SetLabelWidth(5),
 		EntryManager:   NewEntryManager(),
 		HistoryManager: NewHistoryManager(),
 		App:            tview.NewApplication(),
-		Preview:        NewPreview(),
 		Register:       &Register{},
 	}
+
+	if enablePreview {
+		gui.Preview = NewPreview()
+	}
+
+	return gui
 }
 
 // ExecCmd execute command
@@ -177,14 +184,21 @@ func (gui *Gui) Run() error {
 	gui.EntryManager.SetEntries(currentDir)
 
 	gui.EntryManager.Select(1, 0)
-	gui.Preview.UpdateView(gui, gui.EntryManager.GetSelectEntry())
 
 	gui.SetKeybindings()
 
-	grid := tview.NewGrid().SetRows(1, 0).SetColumns(0, 0)
-	grid.AddItem(gui.InputPath, 0, 0, 1, 2, 0, 0, true).
-		AddItem(gui.EntryManager, 1, 0, 1, 1, 0, 0, true).
-		AddItem(gui.Preview, 1, 1, 1, 1, 0, 0, true)
+	grid := tview.NewGrid().SetRows(1, 0).
+		AddItem(gui.InputPath, 0, 0, 1, 2, 0, 0, true)
+
+	if gui.enablePreview {
+		grid.SetColumns(0, 0).
+			AddItem(gui.EntryManager, 1, 0, 1, 1, 0, 0, true).
+			AddItem(gui.Preview, 1, 1, 1, 1, 0, 0, true)
+
+		gui.Preview.UpdateView(gui, gui.EntryManager.GetSelectEntry())
+	} else {
+		grid.AddItem(gui.EntryManager, 1, 0, 1, 2, 0, 0, true)
+	}
 
 	gui.Pages = tview.NewPages().
 		AddAndSwitchToPage("main", grid, true)
