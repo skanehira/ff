@@ -48,41 +48,51 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 	//		gui.EntryManager.Select(history.RowIdx, 0)
 	//	}
 
-	// go to previous dir
+	// go to parent dir
 	case event.Rune() == 'h':
-		path := filepath.Dir(gui.InputPath.GetText())
-		entry := gui.EntryManager.GetSelectEntry()
-		if path != "" {
-			gui.InputPath.SetText(path)
-			gui.EntryManager.SetEntries(path)
+		current := gui.InputPath.GetText()
+		parent := filepath.Dir(current)
+
+		if parent != "" {
+			// save select position
+			gui.EntryManager.SetSelectPos(current)
+
+			// update entries
+			gui.InputPath.SetText(parent)
+			gui.EntryManager.SetEntries(parent)
 			gui.EntryManager.SetOffset(0, 0)
+
+			// restore select position
+			gui.EntryManager.RestorePos(parent)
+
 			if gui.enablePreview {
-				entry = gui.EntryManager.GetSelectEntry()
+				entry := gui.EntryManager.GetSelectEntry()
 				gui.Preview.UpdateView(gui, entry)
 			}
 		}
 
-	// go to parent dir
+	// go to selected dir
 	case event.Rune() == 'l':
 		entry := gui.EntryManager.GetSelectEntry()
-		if entry != nil {
+
+		if entry != nil && entry.IsDir {
+			// save select position
+			gui.EntryManager.SetSelectPos(gui.InputPath.GetText())
+			gui.EntryManager.SetEntries(entry.PathName)
+
+			gui.InputPath.SetText(entry.PathName)
+
+			gui.EntryManager.RestorePos(entry.PathName)
+
 			row, _ := gui.EntryManager.GetSelection()
+			count := gui.EntryManager.GetRowCount()
+			if row > count {
+				gui.EntryManager.Select(count-1, 0)
+			}
 
-			if entry.IsDir {
-				gui.EntryManager.SetEntries(entry.PathName)
-				gui.HistoryManager.Save(row, filepath.Join(filepath.Dir(gui.InputPath.GetText()), entry.Path))
-				gui.InputPath.SetText(entry.PathName)
-
-				count := gui.EntryManager.GetRowCount()
-				if row > count {
-					gui.EntryManager.Select(count-1, 0)
-				}
-
-				if gui.enablePreview {
-					entry := gui.EntryManager.GetSelectEntry()
-
-					gui.Preview.UpdateView(gui, entry)
-				}
+			if gui.enablePreview {
+				entry := gui.EntryManager.GetSelectEntry()
+				gui.Preview.UpdateView(gui, entry)
 			}
 		}
 	}

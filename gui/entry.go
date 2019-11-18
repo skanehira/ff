@@ -34,16 +34,23 @@ type Entry struct {
 	IsDir      bool
 }
 
+type selectPos struct {
+	row int
+	col int
+}
+
 // EntryManager file list
 type EntryManager struct {
 	*tview.Table
-	entries []*Entry
+	entries   []*Entry
+	selectPos map[string]selectPos
 }
 
 // NewEntryManager new entry list
 func NewEntryManager() *EntryManager {
 	e := &EntryManager{
-		Table: tview.NewTable().Select(0, 0).SetFixed(1, 1).SetSelectable(true, false),
+		Table:     tview.NewTable().Select(0, 0).SetFixed(1, 1).SetSelectable(true, false),
+		selectPos: make(map[string]selectPos),
 	}
 
 	e.SetBorder(true).SetTitle("files").SetTitleAlign(tview.AlignLeft)
@@ -54,6 +61,22 @@ func NewEntryManager() *EntryManager {
 // Entries get entries
 func (e *EntryManager) Entries() []*Entry {
 	return e.entries
+}
+
+// SetSelectPos save select position
+func (e *EntryManager) SetSelectPos(path string) {
+	row, col := e.GetSelection()
+	e.selectPos[path] = selectPos{row, col}
+}
+
+// RestorePos restore select position
+func (e *EntryManager) RestorePos(path string) {
+	pos, ok := e.selectPos[path]
+	if !ok {
+		pos = selectPos{1, 0}
+	}
+
+	e.Select(pos.row, pos.col)
 }
 
 // SetEntries set entries
