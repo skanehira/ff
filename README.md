@@ -19,7 +19,22 @@ $ cd ff
 $ go install
 ```
 
-# Keybinding
+# Usage
+## Options
+```sh
+$ ff -h
+Usage of ff:
+  -log
+        enable log
+  -preview
+        enable preview panel
+```
+
+If you use `-log` that will print log. If log file not exists then will be create in `$HONE/ff.log`.
+
+`-preview` is enable preview panel that you can preview file or directories.
+
+## Keybinding
 | panel | key   | operation                      |
 |-------|-------|--------------------------------|
 | path  | `tab` | focus to files                 |
