@@ -2,11 +2,11 @@
 This is file manager on terminal written in Go.
 
 # Features
-- Preview file/directory
+- preview file/directory
 - copy/paste file
 - make a new file/directory
 - rename a file/directory
-- can edit file using `$EDITOR`
+- edit file with `$EDITOR`
 
 # Support OS
 - Linux
@@ -18,6 +18,8 @@ $ git clone https://github.com/skanehira/ff
 $ cd ff
 $ go install
 ```
+
+NOTE: Installation with `go get` is not recommended because libraries is not version locked.
 
 # Usage
 ## Options
@@ -47,6 +49,7 @@ If you use `-log` that will print log. If log file not exists then will be creat
 | files | `m`   | make a new dir                 |
 | files | `n`   | make a new file                |
 | files | `r`   | rename a dir or file           |
+| files | `e`   | edit file with `$EDITOR`       |
 
 # Author
 skanehira
