@@ -198,6 +198,10 @@ func (e *EntryManager) GetSelectEntry() *Entry {
 	if row < 1 {
 		return nil
 	}
+
+	if row > len(e.entries) {
+		return nil
+	}
 	return e.entries[row-1]
 }
 
