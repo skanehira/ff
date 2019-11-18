@@ -43,7 +43,10 @@ If you use `-log` that will print log. If log file not exists then will be creat
 | files | `l`   | cd to parent path              |
 | files | `y`   | copy selected file             |
 | files | `p`   | paste copy file to current dir |
-| files | `d`   | deletee selected file or dir   |
+| files | `d`   | delete selected file or dir    |
 | files | `m`   | make a new dir                 |
 | files | `n`   | make a new file                |
 | files | `r`   | rename a dir or file           |
+
+# Author
+skanehira
