@@ -216,7 +216,12 @@ func (gui *Gui) EntryManagerKeybinding() {
 					return nil
 				})
 		case 'r':
-			gui.Form(map[string]string{"new name": ""}, "rename", "new name", "rename", gui.EntryManager,
+			entry := gui.EntryManager.GetSelectEntry()
+			if entry == nil {
+				return event
+			}
+
+			gui.Form(map[string]string{"new name": entry.Name}, "rename", "new name", "rename", gui.EntryManager,
 				7, func(values map[string]string) error {
 					name := values["new name"]
 					if name == "" {
@@ -224,11 +229,6 @@ func (gui *Gui) EntryManagerKeybinding() {
 					}
 
 					current := gui.InputPath.GetText()
-
-					entry := gui.EntryManager.GetSelectEntry()
-					if entry == nil {
-						return ErrNoFileOrDir
-					}
 
 					target := filepath.Join(current, name)
 					if err := system.Rename(entry.PathName, target); err != nil {
