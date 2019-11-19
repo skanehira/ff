@@ -24,6 +24,13 @@ $ go install
 NOTE: Installation with `go get` is not recommended because libraries is not version locked.
 
 # Usage
+## Settings
+If your terminal `LC_CTYPE` is not `en_US.UTF-8`, please set as following.
+
+```sh
+export LC_CTYPE=en_US.UTF-8
+```
+
 ## Options
 ```sh
 $ ff -h
