@@ -1,6 +1,8 @@
 # ff
 This is file manager on terminal written in Go.
 
+![](https://i.imgur.com/ZAKJfdC.gif)
+
 # Features
 - preview file/directory
 - copy/paste file
