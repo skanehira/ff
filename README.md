@@ -71,6 +71,8 @@ If you use `o` to open something, ff will using `open` in MacOS, `xdg-open` in L
 | files | `e`      | edit file with `$EDITOR`             |
 | files | `o`      | open file or directory               |
 | files | `f`/`/`  | search files or directories          |
+| files | `ctrl-j` | scroll preview panel down            |
+| files | `ctrl-k` | scroll preview panel up              |
 
 # Author
 skanehira
