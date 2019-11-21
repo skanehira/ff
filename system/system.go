@@ -16,7 +16,7 @@ var (
 	ErrFileNotExists = errors.New("file is not exists")
 )
 
-func CopyFile(src, target string) error {
+func Copy(src, target string) error {
 	return copy.Copy(src, target)
 }
 

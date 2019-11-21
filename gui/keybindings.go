@@ -164,7 +164,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 					}
 
 					target := filepath.Join(gui.InputPath.GetText(), name)
-					if err := system.CopyFile(source.PathName, target); err != nil {
+					if err := system.Copy(source.PathName, target); err != nil {
 						log.Println(err)
 						return err
 					}
