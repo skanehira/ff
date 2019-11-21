@@ -265,6 +265,9 @@ func (gui *Gui) EntryManagerKeybinding() {
 				return event
 			}
 			system.Open(entry.PathName)
+
+		case 'f', '/':
+			gui.Search()
 		}
 
 		return event

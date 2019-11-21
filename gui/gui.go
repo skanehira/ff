@@ -6,6 +6,7 @@ import (
 	"log"
 	"os/exec"
 
+	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 )
 
@@ -209,4 +210,27 @@ func (gui *Gui) Run() error {
 	}
 
 	return nil
+}
+
+func (gui *Gui) Search() {
+	pageName := "search"
+	if gui.Pages.HasPage(pageName) {
+		gui.Pages.ShowPage(pageName)
+	} else {
+		input := tview.NewInputField()
+		input.SetBorder(true).SetTitle("search").SetTitleAlign(tview.AlignLeft)
+		input.SetChangedFunc(func(text string) {
+			gui.EntryManager.SetSearchWord(text)
+			current := gui.InputPath.GetText()
+			gui.EntryManager.SetEntries(current)
+		})
+		input.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
+			if key == tcell.KeyEnter {
+				gui.Pages.HidePage(pageName)
+			}
+			gui.FocusPanel(gui.EntryManager)
+		})
+
+		gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(input, 0, 3), true).ShowPage("main")
+	}
 }

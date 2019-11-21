@@ -5,6 +5,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"syscall"
 
 	"log"
@@ -42,8 +43,9 @@ type selectPos struct {
 // EntryManager file list
 type EntryManager struct {
 	*tview.Table
-	entries   []*Entry
-	selectPos map[string]selectPos
+	entries    []*Entry
+	selectPos  map[string]selectPos
+	searchWord string
 }
 
 // NewEntryManager new entry list
@@ -61,6 +63,10 @@ func NewEntryManager() *EntryManager {
 // Entries get entries
 func (e *EntryManager) Entries() []*Entry {
 	return e.entries
+}
+
+func (e *EntryManager) SetSearchWord(word string) {
+	e.searchWord = word
 }
 
 // SetSelectPos save select position
@@ -98,6 +104,9 @@ func (e *EntryManager) SetEntries(path string) []*Entry {
 	var access, change, create, perm, owner, group string
 
 	for _, file := range files {
+		if strings.Index(file.Name(), e.searchWord) == -1 {
+			continue
+		}
 		// get file times
 		pathName := filepath.Join(path, file.Name())
 		t, err := times.Stat(pathName)
