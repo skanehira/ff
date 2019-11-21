@@ -50,21 +50,27 @@ If you use `-log` that will print log. If log file not exists then will be creat
 If you use `o` to open something, ff will using `open` in MacOS, `xdg-open` in Linux.
 
 ## Keybinding
-| panel | key     | operation                            |
-|-------|---------|--------------------------------------|
-| path  | `tab`   | focus to files                       |
-| files | `tab`   | focus to path                        |
-| files | `h`     | cd to specified path                 |
-| files | `l`     | cd to parent path                    |
-| files | `y`     | copy selected file                   |
-| files | `p`     | paste copy file to current directory |
-| files | `d`     | delete selected file or directory    |
-| files | `m`     | make a new dir                       |
-| files | `n`     | make a new file                      |
-| files | `r`     | rename a dir or file                 |
-| files | `e`     | edit file with `$EDITOR`             |
-| files | `o`     | open file or directory               |
-| files | `f`/`/` | search files or directories          |
+| panel | key      | operation                            |
+|-------|----------|--------------------------------------|
+| path  | `tab`    | focus to files                       |
+| files | `tab`    | focus to path                        |
+| files | `j`      | move to next                         |
+| files | `k`      | move to previous                     |
+| files | `g`      | move to top                          |
+| files | `G`      | move to bottom                       |
+| files | `ctrl-b` | move previous page                   |
+| files | `ctrl-f` | move netxt page                      |
+| files | `h`      | cd to specified path                 |
+| files | `l`      | cd to parent path                    |
+| files | `y`      | copy selected file                   |
+| files | `p`      | paste copy file to current directory |
+| files | `d`      | delete selected file or directory    |
+| files | `m`      | make a new dir                       |
+| files | `n`      | make a new file                      |
+| files | `r`      | rename a dir or file                 |
+| files | `e`      | edit file with `$EDITOR`             |
+| files | `o`      | open file or directory               |
+| files | `f`/`/`  | search files or directories          |
 
 # Author
 skanehira
