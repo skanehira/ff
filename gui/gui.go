@@ -223,12 +223,16 @@ func (gui *Gui) Search() {
 			gui.EntryManager.SetSearchWord(text)
 			current := gui.InputPath.GetText()
 			gui.EntryManager.SetEntries(current)
-			gui.Preview.UpdateView(gui, gui.EntryManager.GetSelectEntry())
+
+			if gui.enablePreview {
+				gui.Preview.UpdateView(gui, gui.EntryManager.GetSelectEntry())
+			}
 		})
 		input.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
 			if key == tcell.KeyEnter {
 				gui.Pages.HidePage(pageName)
 			}
+
 			gui.FocusPanel(gui.EntryManager)
 		})
 
