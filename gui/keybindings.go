@@ -258,6 +258,13 @@ func (gui *Gui) EntryManagerKeybinding() {
 				})
 		case 'q':
 			gui.Stop()
+
+		case 'o':
+			entry := gui.EntryManager.GetSelectEntry()
+			if entry == nil {
+				return event
+			}
+			system.Open(entry.PathName)
 		}
 
 		return event
