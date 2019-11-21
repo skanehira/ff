@@ -106,8 +106,17 @@ func (gui *Gui) EntryManagerKeybinding() {
 
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		gui.GlobalKeybinding(event)
+
+		if gui.enablePreview {
+			switch event.Key() {
+			case tcell.KeyCtrlJ:
+				gui.Preview.ScrollDown()
+			case tcell.KeyCtrlK:
+				gui.Preview.ScrollUp()
+			}
+		}
+
 		switch event.Rune() {
-		// cut entry
 		case 'd':
 			if !hasEntry(gui) {
 				return event

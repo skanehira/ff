@@ -16,6 +16,7 @@ import (
 
 type Preview struct {
 	*tview.TextView
+	lineOffset int
 }
 
 func NewPreview() *Preview {
@@ -32,6 +33,8 @@ func (p *Preview) UpdateView(g *Gui, entry *Entry) {
 	if entry == nil {
 		return
 	}
+
+	p.lineOffset = 0
 
 	var text string
 	// TODO configrable max file size with option
@@ -108,4 +111,22 @@ func (p *Preview) Highlight(entry *Entry) string {
 	}
 
 	return tview.TranslateANSI(buf.String())
+}
+
+func (p *Preview) ScrollDown() {
+	_, _, _, height := p.TextView.GetInnerRect()
+
+	if p.lineOffset >= height {
+		return
+	}
+	p.lineOffset++
+	p.TextView.ScrollTo(p.lineOffset, 0)
+}
+
+func (p *Preview) ScrollUp() {
+	if p.lineOffset == 0 {
+		return
+	}
+	p.lineOffset--
+	p.TextView.ScrollTo(p.lineOffset, 0)
 }
