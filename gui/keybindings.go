@@ -154,24 +154,27 @@ func (gui *Gui) EntryManagerKeybinding() {
 
 		// paste entry
 		case 'p':
-			source := gui.Register.CopySource
+			if gui.Register.CopySource != nil {
+				source := gui.Register.CopySource
 
-			gui.Form(map[string]string{"name": source.Name}, "paste", "new name", "new_name", gui.EntryManager,
-				7, func(values map[string]string) error {
-					name := values["name"]
-					if name == "" {
-						return ErrNoNewName
-					}
+				gui.Form(map[string]string{"name": source.Name}, "paste", "new name", "new_name", gui.EntryManager,
+					7, func(values map[string]string) error {
+						name := values["name"]
+						if name == "" {
+							return ErrNoNewName
+						}
 
-					target := filepath.Join(gui.InputPath.GetText(), name)
-					if err := system.Copy(source.PathName, target); err != nil {
-						log.Println(err)
-						return err
-					}
+						target := filepath.Join(gui.InputPath.GetText(), name)
+						if err := system.Copy(source.PathName, target); err != nil {
+							log.Println(err)
+							return err
+						}
 
-					gui.EntryManager.SetEntries(gui.InputPath.GetText())
-					return nil
-				})
+						gui.Register.CopySource = nil
+						gui.EntryManager.SetEntries(gui.InputPath.GetText())
+						return nil
+					})
+			}
 
 		// edit file with $EDITOR
 		case 'e':
