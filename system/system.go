@@ -2,9 +2,12 @@ package system
 
 import (
 	"errors"
-	"io"
 	"log"
 	"os"
+	"os/exec"
+	"runtime"
+
+	"github.com/otiai10/copy"
 )
 
 var (
@@ -14,29 +17,7 @@ var (
 )
 
 func CopyFile(src, target string) error {
-	if isExist(target) {
-		return ErrFileExists
-	}
-
-	s, err := os.Open(src)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	defer s.Close()
-
-	t, err := os.Create(target)
-	if err != nil {
-		return err
-	}
-	defer t.Close()
-
-	if _, err := io.Copy(t, s); err != nil {
-		log.Println(err)
-		return err
-	}
-
-	return nil
+	return copy.Copy(src, target)
 }
 
 func RemoveFile(file string) error {
@@ -89,4 +70,26 @@ func isExist(name string) bool {
 		log.Println(err)
 	}
 	return !os.IsNotExist(err)
+}
+
+func NewDir(dir string) error {
+	// TODO use inputed permission
+	return os.Mkdir(dir, 0777)
+}
+
+func RemoveDirAll(dir string) error {
+	return os.RemoveAll(dir)
+}
+
+func Open(name string) error {
+	switch runtime.GOOS {
+	case "darwin":
+		return exec.Command("open", name).Run()
+	case "windows":
+		return exec.Command("cmd", "/c", "start", name).Run()
+	case "linux":
+		return exec.Command("xdg-open", name).Run()
+	}
+
+	return nil
 }
