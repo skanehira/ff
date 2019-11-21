@@ -294,9 +294,10 @@ func (gui *Gui) InputPathKeybinding() {
 			path := gui.InputPath.GetText()
 			path = os.ExpandEnv(path)
 			gui.InputPath.SetText(path)
-			row, _ := gui.EntryManager.GetSelection()
-			gui.HistoryManager.Save(row, path)
+			//row, _ := gui.EntryManager.GetSelection()
+			//gui.HistoryManager.Save(row, path)
 			gui.EntryManager.SetEntries(path)
+			gui.FocusPanel(gui.EntryManager)
 		}
 
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
