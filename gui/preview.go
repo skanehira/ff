@@ -114,9 +114,14 @@ func (p *Preview) Highlight(entry *Entry) string {
 }
 
 func (p *Preview) ScrollDown() {
-	_, _, _, height := p.TextView.GetInnerRect()
+	// get max offset
+	orow, ocol := p.TextView.GetScrollOffset()
+	maxOffset, _ := p.TextView.ScrollToEnd().GetScrollOffset()
+	// restore offset
+	p.TextView.ScrollToBeginning()
+	p.TextView.ScrollTo(orow, ocol)
 
-	if p.lineOffset >= height {
+	if p.lineOffset > maxOffset {
 		return
 	}
 	p.lineOffset++
