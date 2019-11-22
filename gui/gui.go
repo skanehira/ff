@@ -234,9 +234,9 @@ func (gui *Gui) Search() {
 		input.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
 			if key == tcell.KeyEnter {
 				gui.Pages.HidePage(pageName)
+				gui.FocusPanel(gui.EntryManager)
 			}
 
-			gui.FocusPanel(gui.EntryManager)
 		})
 
 		gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(input, 0, 3), true).ShowPage("main")
