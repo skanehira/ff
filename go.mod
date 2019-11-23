@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/alecthomas/chroma v0.6.8
+	github.com/dustin/go-humanize v1.0.0
 	github.com/gdamore/tcell v1.3.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/otiai10/copy v1.0.2

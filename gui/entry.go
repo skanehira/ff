@@ -10,6 +10,7 @@ import (
 
 	"log"
 
+	"github.com/dustin/go-humanize"
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 	"gopkg.in/djherbis/times.v1"
@@ -199,23 +200,13 @@ func (e *EntryManager) SetColumns() {
 	e.SetHeader()
 	var i int
 	for _, entry := range e.entries {
-		size := strconv.FormatInt(entry.Size, 10)
-		if entry.Viewable {
-			if entry.IsDir {
-				table.SetCell(i+1, 0, tview.NewTableCell(entry.Name))
-				table.SetCell(i+1, 1, tview.NewTableCell(size))
-				table.SetCell(i+1, 2, tview.NewTableCell(entry.Permission))
-				table.SetCell(i+1, 3, tview.NewTableCell(entry.Owner))
-				table.SetCell(i+1, 4, tview.NewTableCell(entry.Group))
-			} else {
-				table.SetCell(i+1, 0, tview.NewTableCell(entry.Name))
-				table.SetCell(i+1, 1, tview.NewTableCell(size))
-				table.SetCell(i+1, 2, tview.NewTableCell(entry.Permission))
-				table.SetCell(i+1, 3, tview.NewTableCell(entry.Owner))
-				table.SetCell(i+1, 4, tview.NewTableCell(entry.Group))
-			}
-			i++
-		}
+		size := humanize.Bytes(uint64(entry.Size))
+		table.SetCell(i+1, 0, tview.NewTableCell(entry.Name))
+		table.SetCell(i+1, 1, tview.NewTableCell(size))
+		table.SetCell(i+1, 2, tview.NewTableCell(entry.Permission))
+		table.SetCell(i+1, 3, tview.NewTableCell(entry.Owner))
+		table.SetCell(i+1, 4, tview.NewTableCell(entry.Group))
+		i++
 	}
 
 	e.UpdateColor()
