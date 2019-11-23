@@ -280,7 +280,9 @@ func (gui *Gui) EntryManagerKeybinding() {
 			if entry == nil {
 				return event
 			}
-			system.Open(entry.PathName)
+			if err := system.Open(entry.PathName); err != nil {
+				gui.Message(err.Error(), gui.EntryManager)
+			}
 
 		case 'f', '/':
 			gui.Search()

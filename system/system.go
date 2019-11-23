@@ -1,7 +1,9 @@
 package system
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -15,6 +17,8 @@ var (
 	ErrDirExists     = errors.New("directory already exists")
 	ErrFileNotExists = errors.New("file is not exists")
 )
+
+var openCmd = os.Getenv("FF_OPEN")
 
 func Copy(src, target string) error {
 	return copy.Copy(src, target)
@@ -82,13 +86,23 @@ func RemoveDirAll(dir string) error {
 }
 
 func Open(name string) error {
-	switch runtime.GOOS {
-	case "darwin":
-		return exec.Command("open", name).Run()
-	case "windows":
-		return exec.Command("cmd", "/c", "start", name).Run()
-	case "linux":
-		return exec.Command("xdg-open", name).Run()
+	open := openCmd
+	if open == "" {
+		switch runtime.GOOS {
+		case "darwin":
+			open = "open"
+		case "linux":
+			open = "xdg-open"
+		}
+	}
+
+	cmd := exec.Command(open, name)
+	buf := bytes.Buffer{}
+	cmd.Stdout = &buf
+	cmd.Stderr = &buf
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%s: %s", err, buf.String())
 	}
 
 	return nil
