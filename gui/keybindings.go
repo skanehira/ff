@@ -1,10 +1,13 @@
 package gui
 
 import (
+	"bytes"
 	"errors"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/gdamore/tcell"
 	"github.com/skanehira/ff/system"
@@ -21,6 +24,7 @@ var (
 func (gui *Gui) SetKeybindings() {
 	gui.InputPathKeybinding()
 	gui.EntryManagerKeybinding()
+	gui.CmdLineKeybinding()
 }
 
 // globalKeybinding
@@ -280,6 +284,8 @@ func (gui *Gui) EntryManagerKeybinding() {
 
 		case 'f', '/':
 			gui.Search()
+		case ':', 'c':
+			gui.FocusPanel(gui.CmdLine)
 		}
 
 		return event
@@ -315,6 +321,48 @@ func (gui *Gui) InputPathKeybinding() {
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTab {
 			gui.App.SetFocus(gui.EntryManager)
+		}
+
+		return event
+	})
+}
+
+func (gui *Gui) CmdLineKeybinding() {
+	cmdline := gui.CmdLine
+
+	cmdline.SetDoneFunc(func(key tcell.Key) {
+		text := cmdline.GetText()
+		if text == "" {
+			return
+		}
+
+		cmdText := strings.Split(text, " ")
+
+		// expand environments
+		for i, c := range cmdText[1:] {
+			cmdText[i+1] = os.ExpandEnv(c)
+		}
+
+		cmd := exec.Command(cmdText[0], cmdText[1:]...)
+
+		buf := bytes.Buffer{}
+		cmd.Stderr = &buf
+		cmd.Stdout = &buf
+		if err := cmd.Run(); err == nil {
+			cmdline.SetText("")
+		}
+
+		result := strings.TrimRight(buf.String(), "\n")
+		if result != "" {
+			gui.Message(result, cmdline)
+		}
+
+		gui.EntryManager.SetEntries(gui.InputPath.GetText())
+	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyTab, tcell.KeyEsc:
+			gui.App.SetFocus(gui.EntryManager)
+			return event
 		}
 
 		return event

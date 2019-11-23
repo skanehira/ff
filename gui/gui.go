@@ -35,6 +35,7 @@ type Gui struct {
 	HistoryManager *HistoryManager
 	EntryManager   *EntryManager
 	Preview        *Preview
+	CmdLine        *CmdLine
 	App            *tview.Application
 	Pages          *tview.Pages
 }
@@ -53,6 +54,7 @@ func New(enablePreview bool) *Gui {
 		InputPath:      tview.NewInputField().SetLabel("path").SetLabelWidth(5),
 		EntryManager:   NewEntryManager(),
 		HistoryManager: NewHistoryManager(),
+		CmdLine:        NewCmdLine(),
 		App:            tview.NewApplication(),
 		Register:       &Register{},
 	}
@@ -188,8 +190,9 @@ func (gui *Gui) Run() error {
 
 	gui.SetKeybindings()
 
-	grid := tview.NewGrid().SetRows(1, 0).
-		AddItem(gui.InputPath, 0, 0, 1, 2, 0, 0, true)
+	grid := tview.NewGrid().SetRows(1, 0, 1).
+		AddItem(gui.InputPath, 0, 0, 1, 2, 0, 0, true).
+		AddItem(gui.CmdLine, 2, 0, 1, 2, 0, 0, true)
 
 	if gui.enablePreview {
 		grid.SetColumns(0, 0).
