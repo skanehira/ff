@@ -47,7 +47,8 @@ If you use `-log` that will print log. If log file not exists then will be creat
 `-preview` is enable preview panel that you can preview file or directories.
 
 ## About open action
-If you use `o` to open something, ff will using `open` in MacOS, `xdg-open` in Linux.
+If you use `o` to open file or directory, ff will using `open` in MacOS, `xdg-open` in Linux.
+You can set environment variable `FF_OPEN` to change open command.
 
 ## About executing command
 `ff` can executing command, but it can't use stdin, stdout, stderr.
