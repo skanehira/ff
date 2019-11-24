@@ -17,6 +17,7 @@ import (
 var (
 	enableLog     = flag.Bool("log", false, "enable log")
 	enablePreview = flag.Bool("preview", false, "enable preview panel")
+	ignorecase    = flag.Bool("ignorecase", false, "ignore case when searcing")
 )
 
 var (
@@ -30,7 +31,7 @@ func run() int {
 		return 1
 	}
 
-	if err := gui.New(*enablePreview).Run(); err != nil {
+	if err := gui.New(*enablePreview, *ignorecase).Run(); err != nil {
 		return 1
 	}
 
