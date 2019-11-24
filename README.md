@@ -48,7 +48,7 @@ If you use `-log` that will print log. If log file not exists then will be creat
 
 ## About open action
 If you use `o` to open file or directory, ff will using `open` in MacOS, `xdg-open` in Linux.
-You can set environment variable `FF_OPEN` to change open command.
+You can set environment variable `FF_OPEN_CMD` to change open command.
 
 ## About executing command
 `ff` can executing command, but it can't use stdin, stdout, stderr.

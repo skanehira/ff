@@ -18,7 +18,7 @@ var (
 	ErrFileNotExists = errors.New("file is not exists")
 )
 
-var openCmd = os.Getenv("FF_OPEN")
+var openCmd = os.Getenv("FF_OPEN_CMD")
 
 func Copy(src, target string) error {
 	return copy.Copy(src, target)
