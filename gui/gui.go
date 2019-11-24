@@ -48,11 +48,11 @@ func hasEntry(gui *Gui) bool {
 }
 
 // New create new gui
-func New(enablePreview bool) *Gui {
+func New(enablePreview bool, enableIgnorecase bool) *Gui {
 	gui := &Gui{
 		enablePreview:  enablePreview,
 		InputPath:      tview.NewInputField().SetLabel("path").SetLabelWidth(5),
-		EntryManager:   NewEntryManager(),
+		EntryManager:   NewEntryManager(enableIgnorecase),
 		HistoryManager: NewHistoryManager(),
 		CmdLine:        NewCmdLine(),
 		App:            tview.NewApplication(),

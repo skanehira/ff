@@ -43,6 +43,7 @@ type selectPos struct {
 
 // EntryManager file list
 type EntryManager struct {
+	enableIgnorecase bool
 	*tview.Table
 	entries    []*Entry
 	selectPos  map[string]selectPos
@@ -50,10 +51,11 @@ type EntryManager struct {
 }
 
 // NewEntryManager new entry list
-func NewEntryManager() *EntryManager {
+func NewEntryManager(enableIgnorecase bool) *EntryManager {
 	e := &EntryManager{
-		Table:     tview.NewTable().Select(0, 0).SetFixed(1, 1).SetSelectable(true, false),
-		selectPos: make(map[string]selectPos),
+		enableIgnorecase: enableIgnorecase,
+		Table:            tview.NewTable().Select(0, 0).SetFixed(1, 1).SetSelectable(true, false),
+		selectPos:        make(map[string]selectPos),
 	}
 
 	e.SetBorder(true).SetTitle("files").SetTitleAlign(tview.AlignLeft)
@@ -105,7 +107,15 @@ func (e *EntryManager) SetEntries(path string) []*Entry {
 	var access, change, create, perm, owner, group string
 
 	for _, file := range files {
-		if strings.Index(file.Name(), e.searchWord) == -1 {
+		var name, word string
+		if e.enableIgnorecase {
+			name = strings.ToLower(file.Name())
+			word = strings.ToLower(e.searchWord)
+		} else {
+			name = file.Name()
+			word = e.searchWord
+		}
+		if strings.Index(name, word) == -1 {
 			continue
 		}
 		// get file times
