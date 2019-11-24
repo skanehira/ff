@@ -36,6 +36,8 @@ export LC_CTYPE=en_US.UTF-8
 ```sh
 $ ff -h
 Usage of ff:
+  -ignorecase
+        ignore case when searcing
   -log
         enable log
   -preview
