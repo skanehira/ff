@@ -10,8 +10,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/skanehira/ff/gui"
+	"github.com/skanehira/ff/system"
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -21,32 +22,65 @@ var (
 )
 
 var (
-	ErrGetHomeDir  = errors.New("cannot get home dir")
 	ErrOpenLogFile = errors.New("cannot open log file")
 )
 
-func run() int {
-	if err := initLogger(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return 1
-	}
-
-	if err := gui.New(*enablePreview, *ignorecase).Run(); err != nil {
-		return 1
-	}
-
-	return 0
+func printError(err error) {
+	fmt.Fprintln(os.Stderr, err)
 }
 
-func initLogger() error {
-	var logWriter io.Writer
-	if *enableLog {
-		home, err := homedir.Dir()
-		if err != nil {
-			return fmt.Errorf("%s: %s", ErrGetHomeDir, err)
-		}
+func initConfig() gui.Config {
+	var config gui.Config
 
-		logWriter, err = os.OpenFile(filepath.Join(home, "ff.log"),
+	configDir, err := os.UserConfigDir()
+
+	if err != nil {
+		printError(err)
+		config = gui.DefaultConfig()
+	} else {
+		configDir = filepath.Join(configDir, "ff")
+
+		configFile := filepath.Join(configDir, "config.yaml")
+		if system.IsExist(configFile) {
+			b, err := ioutil.ReadFile(configFile)
+			if err != nil {
+				printError(err)
+				config = gui.DefaultConfig()
+			} else {
+				if err := yaml.Unmarshal(b, &config); err != nil {
+					printError(err)
+					config = gui.DefaultConfig()
+				}
+			}
+		} else {
+			config = gui.DefaultConfig()
+		}
+	}
+
+	// override config when use flags
+	if *enablePreview {
+		config.Preview.Enable = *enablePreview
+	}
+
+	if *enableLog {
+		config.Log.Enable = *enableLog
+		if config.Log.File == "" {
+			config.Log.File = filepath.Join(configDir, "ff.log")
+		}
+	}
+
+	if *ignorecase {
+		config.IgnoreCase = *ignorecase
+	}
+
+	return config
+}
+
+func initLogger(config gui.Config) error {
+	var logWriter io.Writer
+	var err error
+	if config.Log.Enable {
+		logWriter, err = os.OpenFile(os.ExpandEnv(config.Log.File),
 			os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 
 		if err != nil {
@@ -54,7 +88,7 @@ func initLogger() error {
 		}
 		log.SetFlags(log.Lshortfile)
 	} else {
-		// no print log
+		// don't print log
 		logWriter = ioutil.Discard
 	}
 
@@ -62,7 +96,22 @@ func initLogger() error {
 	return nil
 }
 
-func main() {
+func run() int {
 	flag.Parse()
+
+	config := initConfig()
+	if err := initLogger(config); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+
+	if err := gui.New(config).Run(); err != nil {
+		return 1
+	}
+
+	return 0
+}
+
+func main() {
 	os.Exit(run())
 }

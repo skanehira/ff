@@ -11,4 +11,5 @@ require (
 	github.com/rivo/tview v0.0.0-20190324182152-8a9e26fab0ff
 	github.com/rivo/uniseg v0.1.0 // indirect
 	gopkg.in/djherbis/times.v1 v1.2.0
+	gopkg.in/yaml.v2 v2.2.7
 )

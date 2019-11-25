@@ -16,12 +16,14 @@ import (
 
 type Preview struct {
 	*tview.TextView
-	lineOffset int
+	colorscheme string
+	lineOffset  int
 }
 
-func NewPreview() *Preview {
+func NewPreview(colorscheme string) *Preview {
 	p := &Preview{
-		TextView: tview.NewTextView(),
+		TextView:    tview.NewTextView(),
+		colorscheme: colorscheme,
 	}
 
 	p.SetBorder(true).SetTitle("preview").SetTitleAlign(tview.AlignLeft)
@@ -92,7 +94,7 @@ func (p *Preview) Highlight(entry *Entry) string {
 	}
 
 	// Determine style.
-	s := styles.Get("monokai")
+	s := styles.Get(p.colorscheme)
 	if s == nil {
 		s = styles.Fallback
 	}

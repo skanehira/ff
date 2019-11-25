@@ -25,7 +25,7 @@ func Copy(src, target string) error {
 }
 
 func RemoveFile(file string) error {
-	if !isExist(file) {
+	if !IsExist(file) {
 		return ErrFileNotExists
 	}
 
@@ -38,7 +38,7 @@ func RemoveFile(file string) error {
 }
 
 func NewFile(file string) error {
-	if isExist(file) {
+	if IsExist(file) {
 		return ErrFileExists
 	}
 
@@ -52,11 +52,11 @@ func NewFile(file string) error {
 }
 
 func Rename(oldpath, newpath string) error {
-	if !isExist(oldpath) {
+	if !IsExist(oldpath) {
 		return ErrFileNotExists
 	}
 
-	if isExist(newpath) {
+	if IsExist(newpath) {
 		return ErrFileExists
 	}
 
@@ -68,11 +68,8 @@ func Rename(oldpath, newpath string) error {
 	return nil
 }
 
-func isExist(name string) bool {
+func IsExist(name string) bool {
 	_, err := os.Stat(name)
-	if err != nil {
-		log.Println(err)
-	}
 	return !os.IsNotExist(err)
 }
 

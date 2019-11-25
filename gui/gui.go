@@ -29,7 +29,7 @@ func (r *Register) ClearCopyResources() {
 
 // Gui gui have some manager
 type Gui struct {
-	enablePreview  bool
+	Config         Config
 	InputPath      *tview.InputField
 	Register       *Register
 	HistoryManager *HistoryManager
@@ -48,19 +48,19 @@ func hasEntry(gui *Gui) bool {
 }
 
 // New create new gui
-func New(enablePreview bool, enableIgnorecase bool) *Gui {
+func New(config Config) *Gui {
 	gui := &Gui{
-		enablePreview:  enablePreview,
+		Config:         config,
 		InputPath:      tview.NewInputField().SetLabel("path").SetLabelWidth(5),
-		EntryManager:   NewEntryManager(enableIgnorecase),
+		EntryManager:   NewEntryManager(config.IgnoreCase),
 		HistoryManager: NewHistoryManager(),
 		CmdLine:        NewCmdLine(),
 		App:            tview.NewApplication(),
 		Register:       &Register{},
 	}
 
-	if enablePreview {
-		gui.Preview = NewPreview()
+	if gui.Config.Preview.Enable {
+		gui.Preview = NewPreview(config.Preview.Colorscheme)
 	}
 
 	return gui
@@ -194,7 +194,7 @@ func (gui *Gui) Run() error {
 		AddItem(gui.InputPath, 0, 0, 1, 2, 0, 0, true).
 		AddItem(gui.CmdLine, 2, 0, 1, 2, 0, 0, true)
 
-	if gui.enablePreview {
+	if gui.Config.Preview.Enable {
 		grid.SetColumns(0, 0).
 			AddItem(gui.EntryManager, 1, 0, 1, 1, 0, 0, true).
 			AddItem(gui.Preview, 1, 1, 1, 1, 0, 0, true)
@@ -227,7 +227,7 @@ func (gui *Gui) Search() {
 			current := gui.InputPath.GetText()
 			gui.EntryManager.SetEntries(current)
 
-			if gui.enablePreview {
+			if gui.Config.Preview.Enable {
 				gui.Preview.UpdateView(gui, gui.EntryManager.GetSelectEntry())
 			}
 		})

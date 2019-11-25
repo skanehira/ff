@@ -69,7 +69,7 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 			// restore select position
 			gui.EntryManager.RestorePos(parent)
 
-			if gui.enablePreview {
+			if gui.Config.Preview.Enable {
 				entry := gui.EntryManager.GetSelectEntry()
 				gui.Preview.UpdateView(gui, entry)
 			}
@@ -94,7 +94,7 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 				gui.EntryManager.Select(count-1, 0)
 			}
 
-			if gui.enablePreview {
+			if gui.Config.Preview.Enable {
 				entry := gui.EntryManager.GetSelectEntry()
 				gui.Preview.UpdateView(gui, entry)
 			}
@@ -111,7 +111,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		gui.GlobalKeybinding(event)
 
-		if gui.enablePreview {
+		if gui.Config.Preview.Enable {
 			switch event.Key() {
 			case tcell.KeyCtrlJ:
 				gui.Preview.ScrollDown()
@@ -209,7 +209,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 				}
 			})
 
-			if gui.enablePreview {
+			if gui.Config.Preview.Enable {
 				entry := gui.EntryManager.GetSelectEntry()
 				gui.Preview.UpdateView(gui, entry)
 			}
@@ -295,7 +295,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 
 	gui.EntryManager.SetSelectionChangedFunc(func(row, col int) {
 		if row > 0 {
-			if gui.enablePreview {
+			if gui.Config.Preview.Enable {
 				f := gui.EntryManager.Entries()[row-1]
 				gui.Preview.UpdateView(gui, f)
 			}
