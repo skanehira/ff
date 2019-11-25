@@ -12,7 +12,7 @@
 - open file/directory
 
 # Support OS
-- Linux
+- Linux/Unix
 - Mac
 
 # Installtion
@@ -37,16 +37,44 @@ export LC_CTYPE=en_US.UTF-8
 $ ff -h
 Usage of ff:
   -ignorecase
-        ignore case when searcing
+        ignore case when searching
   -log
         enable log
   -preview
         enable preview panel
 ```
 
-If you use `-log` that will print log. If log file not exists then will be create in `$HONE/ff.log`.
+If you use `-log` that will print log.
+If log file not exists, then will be create in `$XDG_CONFIG_HOME/ff/ff.log`.
 
 `-preview` is enable preview panel that you can preview file or directories.
+
+## Config
+You can using `config.yaml` to config log, preview, etc...
+
+```yaml
+# print log to file
+log:
+  enable: true
+  file: $XDG_CONFIG_HOME/ff/ff.log
+
+# preview the contents of file or directory
+preview:
+  enable: true
+  # preview colorscheme. you can use colorscheme following
+  # https://xyproto.github.io/splash/docs/all.html
+  colorscheme: monokai
+
+# if ignore_case is true, ignore case when searching
+ignore_case: true
+```
+
+The `config.yaml` should be placed in the following path.
+
+|OS        |path                                              |
+|----------|--------------------------------------------------|
+|MacOS     |`$HOME/Library/Application Support/ff/config.yaml`|
+|Linux/Unix|`$XDG_CONFIG_HOME/ff/config.yaml`                 |
 
 ## About open action
 If you use `o` to open file or directory, ff will using `open` in MacOS, `xdg-open` in Linux.
