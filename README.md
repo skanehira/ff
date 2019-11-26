@@ -22,7 +22,7 @@ $ cd ff
 $ go install
 ```
 
-NOTE: Installation with `go get` is not recommended because libraries is not version locked.
+NOTE: Installation with `go get` is not recommended because libraries's version  is not locked.
 
 # Usage
 ## Settings
@@ -110,6 +110,7 @@ So, you only can executing command that doesn't use stdin, stdout, stderr.
 | files   | `ctrl-j`    | scroll preview panel down            |
 | files   | `ctrl-k`    | scroll preview panel up              |
 | files   | `c`/`:`     | focus cmdline panel                  |
+| files   | `.`         | edit config.yaml                     |
 | cmdline | `enter`     | executing command                    |
 | cmdline | `tab`/`esc` | focus files                          |
 
