@@ -63,7 +63,7 @@ func initConfig() gui.Config {
 		config.Preview.Enable = *enablePreview
 	}
 
-	if *enableLog {
+	if *enableLog && configDir != "" {
 		config.Log.Enable = *enableLog
 		if config.Log.File == "" {
 			config.Log.File = filepath.Join(configDir, "ff.log")
