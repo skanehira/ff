@@ -55,6 +55,7 @@ func initConfig() gui.Config {
 		} else {
 			config = gui.DefaultConfig()
 		}
+		config.ConfigFile = configFile
 	}
 
 	// override config when use flags

@@ -1,6 +1,7 @@
 package gui
 
 type Config struct {
+	ConfigFile string
 	Log        LogConfig     `yaml:"log"`
 	Preview    PreviewConfig `yaml:"preview"`
 	IgnoreCase bool          `yaml:"ignore_case"`

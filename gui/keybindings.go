@@ -286,8 +286,23 @@ func (gui *Gui) EntryManagerKeybinding() {
 
 		case 'f', '/':
 			gui.Search()
+
 		case ':', 'c':
 			gui.FocusPanel(gui.CmdLine)
+
+		case '.':
+			editor := os.Getenv("EDITOR")
+			if editor == "" {
+				log.Println("$EDITOR is empty, please set $EDITOR")
+				return event
+			}
+
+			gui.App.Suspend(func() {
+				if err := gui.ExecCmd(true, editor, gui.Config.ConfigFile); err != nil {
+					log.Printf("%s: %s\n", ErrEdit, err)
+				}
+			})
+
 		}
 
 		return event
