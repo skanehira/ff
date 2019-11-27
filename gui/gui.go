@@ -36,6 +36,7 @@ type Gui struct {
 	EntryManager   *EntryManager
 	Preview        *Preview
 	CmdLine        *CmdLine
+	Bookmark       *Bookmarks
 	App            *tview.Application
 	Pages          *tview.Pages
 }
@@ -57,10 +58,19 @@ func New(config Config) *Gui {
 		CmdLine:        NewCmdLine(),
 		App:            tview.NewApplication(),
 		Register:       &Register{},
+		Pages:          tview.NewPages(),
 	}
 
 	if gui.Config.Preview.Enable {
 		gui.Preview = NewPreview(config.Preview.Colorscheme)
+	}
+
+	if gui.Config.Bookmark.Enable {
+		bookmark, err := NewBookmark(config)
+		if err != nil {
+			gui.Config.Bookmark.Enable = false
+		}
+		gui.Bookmark = bookmark
 	}
 
 	return gui
@@ -204,8 +214,7 @@ func (gui *Gui) Run() error {
 		grid.AddItem(gui.EntryManager, 1, 0, 1, 2, 0, 0, true)
 	}
 
-	gui.Pages = tview.NewPages().
-		AddAndSwitchToPage("main", grid, true)
+	gui.Pages.AddAndSwitchToPage("main", grid, true)
 
 	if err := gui.App.SetRoot(gui.Pages, true).SetFocus(gui.EntryManager).Run(); err != nil {
 		gui.App.Stop()

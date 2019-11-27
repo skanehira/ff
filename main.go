@@ -55,6 +55,7 @@ func initConfig() gui.Config {
 		} else {
 			config = gui.DefaultConfig()
 		}
+		config.ConfigDir = configDir
 		config.ConfigFile = configFile
 	}
 

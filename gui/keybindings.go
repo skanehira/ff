@@ -25,6 +25,10 @@ func (gui *Gui) SetKeybindings() {
 	gui.InputPathKeybinding()
 	gui.EntryManagerKeybinding()
 	gui.CmdLineKeybinding()
+
+	if gui.Config.Bookmark.Enable {
+		gui.BookmarkKeybinding()
+	}
 }
 
 // globalKeybinding
@@ -303,6 +307,24 @@ func (gui *Gui) EntryManagerKeybinding() {
 				}
 			})
 
+		case 'b':
+			if gui.Config.Bookmark.Enable {
+				entry := gui.EntryManager.GetSelectEntry()
+				if entry != nil && entry.IsDir {
+					if err := gui.Bookmark.Add(entry.PathName); err != nil {
+						gui.Message(err.Error(), gui.EntryManager)
+					}
+				}
+			}
+
+		case 'B':
+			if gui.Config.Bookmark.Enable {
+				if err := gui.Bookmark.Update(); err != nil {
+					gui.Message(err.Error(), gui.EntryManager)
+					return event
+				}
+				gui.Pages.AddAndSwitchToPage("bookmark", gui.Modal(gui.Bookmark, 0, 0), true).ShowPage("main")
+			}
 		}
 
 		return event
@@ -316,7 +338,6 @@ func (gui *Gui) EntryManagerKeybinding() {
 			}
 		}
 	})
-
 }
 
 func (gui *Gui) InputPathKeybinding() {
@@ -380,6 +401,37 @@ func (gui *Gui) CmdLineKeybinding() {
 		case tcell.KeyTab, tcell.KeyEsc:
 			gui.App.SetFocus(gui.EntryManager)
 			return event
+		}
+
+		return event
+	})
+}
+
+func (gui *Gui) BookmarkKeybinding() {
+	gui.Bookmark.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Rune() {
+		case 'q':
+			gui.Pages.RemovePage("bookmark")
+			gui.FocusPanel(gui.EntryManager)
+		case 'd':
+			entry := gui.Bookmark.GetSelectEntry()
+			if entry == nil {
+				return event
+			}
+			gui.Bookmark.Delete(entry.ID)
+			gui.Bookmark.Update()
+		}
+
+		switch event.Key() {
+		case tcell.KeyCtrlG:
+			entry := gui.Bookmark.GetSelectEntry()
+			if entry == nil {
+				return event
+			}
+			gui.InputPath.SetText(entry.Name)
+			gui.EntryManager.SetEntries(entry.Name)
+			gui.EntryManager.SetOffset(0, 0)
+			gui.EntryManager.RestorePos(entry.Name)
 		}
 
 		return event
