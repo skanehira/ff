@@ -133,10 +133,11 @@ So, you only can executing command that doesn't use stdin, stdout, stderr.
 | `B`      | open bookmarks panel                 |
 
 ### bookmark
-| key | operation             |
-|-----|-----------------------|
-| `d` | delete bookmark       |
-| `q` | close bookmarks panel |
+| key      | operation             |
+|----------|-----------------------|
+| `d`      | delete bookmark       |
+| `q`      | close bookmarks panel |
+| `ctrl-g` | go to bookmark        |
 
 ### cmd
 | key         | operation         |
