@@ -67,6 +67,11 @@ preview:
 
 # if ignore_case is true, ignore case when searching
 ignore_case: true
+
+# if enable is true, can use bookmark
+bookmark:
+  enable: true
+  file: $XDG_CONFIG_HOME/ff/bookmark.db
 ```
 
 The `config.yaml` should be placed in the following path.
@@ -75,6 +80,12 @@ The `config.yaml` should be placed in the following path.
 |----------|--------------------------------------------------|
 |MacOS     |`$HOME/Library/Application Support/ff/config.yaml`|
 |Linux/Unix|`$XDG_CONFIG_HOME/ff/config.yaml`                 |
+
+## About bookmark
+`ff` can use `b` to bookmark directory. bookmark will be stored sqlite3 database.
+If you want enable bookmark, you have to specify database file.
+Database file will auto create when `ff` starting. If `ff` can't create database file, then will use inmemory mode.
+The inmemory mode will save bookmark to memory, so if `ff` quit bookmarks will lost.
 
 ## About open action
 If you use `o` to open file or directory, ff will using `open` in MacOS, `xdg-open` in Linux.
@@ -86,33 +97,52 @@ Example, if you run `vim` , `ff` will freeze.
 So, you only can executing command that doesn't use stdin, stdout, stderr.
 
 ## Keybinding
-| panel   | key         | operation                            |
-|---------|-------------|--------------------------------------|
-| path    | `tab`       | focus to files                       |
-| files   | `tab`       | focus to path                        |
-| files   | `j`         | move to next                         |
-| files   | `k`         | move to previous                     |
-| files   | `g`         | move to top                          |
-| files   | `G`         | move to bottom                       |
-| files   | `ctrl-b`    | move previous page                   |
-| files   | `ctrl-f`    | move netxt page                      |
-| files   | `h`         | cd to specified path                 |
-| files   | `l`         | cd to parent path                    |
-| files   | `y`         | copy selected file                   |
-| files   | `p`         | paste copy file to current directory |
-| files   | `d`         | delete selected file or directory    |
-| files   | `m`         | make a new dir                       |
-| files   | `n`         | make a new file                      |
-| files   | `r`         | rename a dir or file                 |
-| files   | `e`         | edit file with `$EDITOR`             |
-| files   | `o`         | open file or directory               |
-| files   | `f`/`/`     | search files or directories          |
-| files   | `ctrl-j`    | scroll preview panel down            |
-| files   | `ctrl-k`    | scroll preview panel up              |
-| files   | `c`/`:`     | focus cmdline panel                  |
-| files   | `.`         | edit config.yaml                     |
-| cmdline | `enter`     | executing command                    |
-| cmdline | `tab`/`esc` | focus files                          |
+### path
+| key     | operation        |
+|---------|------------------|
+| `tab`   | focus to files   |
+| `Enter` | change directory |
+
+### files
+| key      | operation                            |
+|----------|--------------------------------------|
+| `tab`    | focus to files                       |
+| `tab`    | focus to path                        |
+| `j`      | move to next                         |
+| `k`      | move to previous                     |
+| `g`      | move to top                          |
+| `G`      | move to bottom                       |
+| `ctrl-b` | move previous page                   |
+| `ctrl-f` | move netxt page                      |
+| `h`      | cd to specified path                 |
+| `l`      | cd to parent path                    |
+| `y`      | copy selected file                   |
+| `p`      | paste copy file to current directory |
+| `d`      | delete selected file or directory    |
+| `m`      | make a new dir                       |
+| `n`      | make a new file                      |
+| `r`      | rename a dir or file                 |
+| `e`      | edit file with `$EDITOR`             |
+| `o`      | open file or directory               |
+| `f`/`/`  | search files or directories          |
+| `ctrl-j` | scroll preview panel down            |
+| `ctrl-k` | scroll preview panel up              |
+| `c`/`:`  | focus cmdline panel                  |
+| `.`      | edit config.yaml                     |
+| `b`      | bookmark dirctory                    |
+| `B`      | open bookmarks panel                 |
+
+### bookmark
+| key | operation             |
+|-----|-----------------------|
+| `d` | delete bookmark       |
+| `q` | close bookmarks panel |
+
+### cmd
+| key         | operation         |
+|-------------|-------------------|
+| `enter`     | executing command |
+| `tab`/`esc` | focus files       |
 
 # Author
 skanehira
