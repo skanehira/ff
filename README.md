@@ -10,6 +10,10 @@
 - rename a file/directory
 - edit file with `$EDITOR`
 - open file/directory
+- bookmark directory
+
+# Go version
+- 1.13~
 
 # Support OS
 - Linux/Unix
