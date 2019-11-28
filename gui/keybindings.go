@@ -422,6 +422,8 @@ func (gui *Gui) BookmarkKeybinding() {
 			gui.Bookmark.Update()
 		case 'f', '/':
 			gui.SearchBookmark()
+		case 'a':
+			gui.AddBookmark()
 		}
 
 		switch event.Key() {

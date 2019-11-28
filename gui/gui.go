@@ -8,6 +8,7 @@ import (
 
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
+	"github.com/skanehira/ff/system"
 )
 
 // Register copy/paste file resource
@@ -100,7 +101,7 @@ func (gui *Gui) Message(message string, page tview.Primitive) {
 		SetText(message).
 		AddButtons([]string{doneLabel}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			gui.Pages.RemovePage("message").SwitchToPage("main")
+			gui.Pages.RemovePage("message")
 			gui.App.SetFocus(page)
 		})
 
@@ -164,7 +165,7 @@ func (gui *Gui) Form(fieldLabel map[string]string, doneLabel, title, pageName st
 
 		if err := doneFunc(values); err != nil {
 			log.Println(err)
-			gui.Message(err.Error(), gui.EntryManager)
+			gui.Message(err.Error(), panel)
 			return
 		}
 
@@ -273,4 +274,31 @@ func (gui *Gui) SearchBookmark() {
 
 		gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(input, 0, 3), true).ShowPage("bookmark").ShowPage("main")
 	}
+}
+
+func (gui *Gui) AddBookmark() {
+	gui.Form(map[string]string{"path": ""}, "add", "new bookmark", "new_bookmark", gui.Bookmark,
+		7, func(values map[string]string) error {
+			name := values["path"]
+			if name == "" {
+				return ErrNoPathName
+			}
+			name = os.ExpandEnv(name)
+
+			if !system.IsExist(name) {
+				return ErrNotExistPath
+			}
+
+			if err := gui.Bookmark.Add(name); err != nil {
+				return err
+			}
+
+			if err := gui.Bookmark.Update(); err != nil {
+				return err
+			}
+
+			return nil
+		})
+
+	gui.Pages.ShowPage("bookmark")
 }
