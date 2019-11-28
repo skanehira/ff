@@ -139,9 +139,11 @@ So, you only can executing command that doesn't use stdin, stdout, stderr.
 ### bookmark
 | key      | operation             |
 |----------|-----------------------|
+| `a`      | add bookmark          |
 | `d`      | delete bookmark       |
 | `q`      | close bookmarks panel |
 | `ctrl-g` | go to bookmark        |
+| `f`/`/`  | search bookmarks      |
 
 ### cmd
 | key         | operation         |
