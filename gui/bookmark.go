@@ -119,7 +119,7 @@ func NewBookmark(config Config) (*Bookmarks, error) {
 	}, nil
 }
 
-func (b *Bookmarks) SetWord(word string) {
+func (b *Bookmarks) SetSearchWord(word string) {
 	b.searchWord = word
 }
 

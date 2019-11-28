@@ -411,7 +411,7 @@ func (gui *Gui) BookmarkKeybinding() {
 	gui.Bookmark.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Rune() {
 		case 'q':
-			gui.Pages.RemovePage("bookmark")
+			gui.Pages.RemovePage("bookmark").ShowPage("main")
 			gui.FocusPanel(gui.EntryManager)
 		case 'd':
 			entry := gui.Bookmark.GetSelectEntry()
@@ -420,6 +420,8 @@ func (gui *Gui) BookmarkKeybinding() {
 			}
 			gui.Bookmark.Delete(entry.ID)
 			gui.Bookmark.Update()
+		case 'f', '/':
+			gui.SearchBookmark()
 		}
 
 		switch event.Key() {

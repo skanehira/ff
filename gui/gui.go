@@ -251,3 +251,26 @@ func (gui *Gui) Search() {
 		gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(input, 0, 3), true).ShowPage("main")
 	}
 }
+
+func (gui *Gui) SearchBookmark() {
+	pageName := "search_bookmark"
+	if gui.Pages.HasPage(pageName) {
+		gui.Pages.SendToFront(pageName).ShowPage(pageName)
+	} else {
+		input := tview.NewInputField()
+		input.SetBorder(true).SetTitle("search bookmark").SetTitleAlign(tview.AlignLeft)
+		input.SetChangedFunc(func(text string) {
+			gui.Bookmark.SetSearchWord(text)
+			gui.Bookmark.UpdateView()
+		})
+		input.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
+			if key == tcell.KeyEnter {
+				gui.Pages.HidePage(pageName)
+				gui.FocusPanel(gui.Bookmark)
+			}
+
+		})
+
+		gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(input, 0, 3), true).ShowPage("bookmark").ShowPage("main")
+	}
+}
