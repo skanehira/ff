@@ -199,8 +199,6 @@ func (gui *Gui) Run() error {
 
 	gui.EntryManager.Select(1, 0)
 
-	gui.SetKeybindings()
-
 	grid := tview.NewGrid().SetRows(1, 0, 1).
 		AddItem(gui.InputPath, 0, 0, 1, 2, 0, 0, true).
 		AddItem(gui.CmdLine, 2, 0, 1, 2, 0, 0, true)
@@ -215,6 +213,7 @@ func (gui *Gui) Run() error {
 		grid.AddItem(gui.EntryManager, 1, 0, 1, 2, 0, 0, true)
 	}
 
+	gui.SetKeybindings()
 	gui.Pages.AddAndSwitchToPage("main", grid, true)
 
 	if err := gui.App.SetRoot(gui.Pages, true).SetFocus(gui.EntryManager).Run(); err != nil {

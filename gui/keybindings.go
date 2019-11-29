@@ -315,8 +315,10 @@ func (gui *Gui) EntryManagerKeybinding() {
 	gui.EntryManager.SetSelectionChangedFunc(func(row, col int) {
 		if row > 0 {
 			if gui.Config.Preview.Enable {
-				f := gui.EntryManager.Entries()[row-1]
-				gui.Preview.UpdateView(gui, f)
+				entries := gui.EntryManager.Entries()
+				if len(entries) > 1 {
+					gui.Preview.UpdateView(gui, entries[row-1])
+				}
 			}
 		}
 	})
