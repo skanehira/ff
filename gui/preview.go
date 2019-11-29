@@ -105,7 +105,7 @@ func (p *Preview) Highlight(entry *Entry) string {
 		return err.Error()
 	}
 
-	var buf = bytes.Buffer{}
+	var buf bytes.Buffer
 
 	if err := f.Format(&buf, s, it); err != nil {
 		log.Println(err)
