@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -349,6 +350,43 @@ func (gui *Gui) EditFile(file string) error {
 }
 
 func (gui *Gui) InputPathKeybinding() {
+	gui.InputPath.SetAutocompleteFunc(func(text string) []string {
+		var entries []string
+
+		dir := filepath.Dir(text)
+		i, err := os.Lstat(dir)
+		if err != nil || !i.IsDir() {
+			log.Println(err)
+			return entries
+		}
+
+		var fileName string
+		if !strings.HasSuffix(text, "/") {
+			fileName = filepath.Base(text)
+		}
+
+		parent, _ := filepath.Split(text)
+
+		files, err := ioutil.ReadDir(dir)
+		if err != nil {
+			log.Println(err)
+			return entries
+		}
+
+		for _, f := range files {
+			target := f.Name()
+			if gui.Config.IgnoreCase {
+				target = strings.ToLower(f.Name())
+				fileName = strings.ToLower(fileName)
+			}
+			if f.IsDir() && strings.Index(target, fileName) != -1 {
+				entries = append(entries, filepath.Join(parent, f.Name()))
+			}
+		}
+
+		return entries
+	})
+
 	gui.InputPath.SetDoneFunc(func(key tcell.Key) {
 		if key == tcell.KeyEscape {
 			gui.App.Stop()
@@ -365,9 +403,9 @@ func (gui *Gui) InputPathKeybinding() {
 		}
 
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() == tcell.KeyTab {
-			gui.App.SetFocus(gui.EntryManager)
-		}
+		//if event.Key() == tcell.KeyTab {
+		//	gui.App.SetFocus(gui.EntryManager)
+		//}
 
 		return event
 	})
