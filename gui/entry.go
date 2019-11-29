@@ -132,10 +132,10 @@ func (e *EntryManager) SetEntries(path string) []*Entry {
 			create = t.BirthTime().Format(dateFmt)
 		}
 
+		perm = file.Mode().String()
+
 		// get file permission, owner, group
 		if stat, ok := file.Sys().(*syscall.Stat_t); ok {
-			perm = file.Mode().String()
-
 			uid := strconv.Itoa(int(stat.Uid))
 			u, err := user.LookupId(uid)
 			if err != nil {
