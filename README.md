@@ -88,8 +88,15 @@ The `config.yaml` should be placed in the following path.
 ## About bookmark
 `ff` can use `b` to bookmark directory. bookmark will be stored sqlite3 database.
 If you want enable bookmark, you have to specify database file.
-Database file will auto create when `ff` starting. If `ff` can't create database file, then will use inmemory mode.
+
+Database file will auto create when `ff` starting. If `ff` can't create database file,
+then will use inmemory mode.
+
 The inmemory mode will save bookmark to memory, so if `ff` quit bookmarks will lost.
+
+## About Edit file
+If you runing `ff` in Vim's terminal and `$EDITOR` is `vim`,
+`ff` will use running Vim to edit file.
 
 ## About open action
 If you use `o` to open file or directory, ff will using `open` in MacOS, `xdg-open` in Linux.
