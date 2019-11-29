@@ -111,7 +111,6 @@ So, you only can executing command that doesn't use stdin, stdout, stderr.
 ### path
 | key     | operation        |
 |---------|------------------|
-| `tab`   | focus to files   |
 | `Enter` | change directory |
 
 ### files
