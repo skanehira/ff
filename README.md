@@ -1,7 +1,7 @@
 # ff
 `ff` is file manager written in Go.
 
-![](https://i.imgur.com/ZAKJfdC.gif)
+![](https://i.imgur.com/UNAKinf.gif)
 
 # Features
 - preview file/directory
