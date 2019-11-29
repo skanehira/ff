@@ -3,6 +3,7 @@ package gui
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -195,28 +196,16 @@ func (gui *Gui) EntryManagerKeybinding() {
 
 		// edit file with $EDITOR
 		case 'e':
-			editor := os.Getenv("EDITOR")
-			if editor == "" {
-				log.Println("$EDITOR is empty, please set $EDITOR")
-				return event
-			}
-
 			entry := gui.EntryManager.GetSelectEntry()
 			if entry == nil {
 				log.Println("cannot get entry")
 				return event
 			}
 
-			gui.App.Suspend(func() {
-				if err := gui.ExecCmd(true, editor, entry.PathName); err != nil {
-					log.Printf("%s: %s\n", ErrEdit, err)
-				}
-			})
-
-			if gui.Config.Preview.Enable {
-				entry := gui.EntryManager.GetSelectEntry()
-				gui.Preview.UpdateView(gui, entry)
+			if err := gui.EditFile(entry.PathName); err != nil {
+				gui.Message(err.Error(), gui.EntryManager)
 			}
+
 		case 'm':
 			gui.Form(map[string]string{"name": ""}, "create", "new direcotry",
 				"create_directory", gui.EntryManager,
@@ -295,17 +284,9 @@ func (gui *Gui) EntryManagerKeybinding() {
 			gui.FocusPanel(gui.CmdLine)
 
 		case '.':
-			editor := os.Getenv("EDITOR")
-			if editor == "" {
-				log.Println("$EDITOR is empty, please set $EDITOR")
-				return event
+			if err := gui.EditFile(gui.Config.ConfigFile); err != nil {
+				gui.Message(err.Error(), gui.EntryManager)
 			}
-
-			gui.App.Suspend(func() {
-				if err := gui.ExecCmd(true, editor, gui.Config.ConfigFile); err != nil {
-					log.Printf("%s: %s\n", ErrEdit, err)
-				}
-			})
 
 		case 'b':
 			if gui.Config.Bookmark.Enable {
@@ -323,7 +304,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 					gui.Message(err.Error(), gui.EntryManager)
 					return event
 				}
-				gui.Pages.AddAndSwitchToPage("bookmark", gui.Modal(gui.Bookmark, 0, 0), true).ShowPage("main")
+				gui.Pages.AddAndSwitchToPage("bookmark", gui.Bookmark, true).ShowPage("main")
 			}
 		}
 
@@ -338,6 +319,33 @@ func (gui *Gui) EntryManagerKeybinding() {
 			}
 		}
 	})
+}
+
+func (gui *Gui) EditFile(file string) error {
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		return ErrNoEditor
+	}
+
+	// if `ff` running in vim terminal, use running vim
+	if os.Getenv("VIM_TERMINAL") != "" && editor == "vim" {
+		cmd := exec.Command("sh", "-c", fmt.Sprintf(`echo '\x1b]51;["drop","%s"]\x07'`, file))
+		cmd.Stdout = os.Stdout
+		return cmd.Run()
+	}
+
+	gui.App.Suspend(func() {
+		if err := gui.ExecCmd(true, editor, file); err != nil {
+			log.Printf("%s: %s\n", ErrEdit, err)
+		}
+	})
+
+	if gui.Config.Preview.Enable {
+		entry := gui.EntryManager.GetSelectEntry()
+		gui.Preview.UpdateView(gui, entry)
+	}
+
+	return nil
 }
 
 func (gui *Gui) InputPathKeybinding() {

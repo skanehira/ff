@@ -11,4 +11,5 @@ var (
 	ErrGetTime      = errors.New("can't get timespec")
 	ErrNoPathName   = errors.New("no path name")
 	ErrNotExistPath = errors.New("not exist path")
+	ErrNoEditor     = errors.New("$EDITOR is empty")
 )
