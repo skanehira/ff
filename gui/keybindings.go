@@ -64,21 +64,7 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 		parent := filepath.Dir(current)
 
 		if parent != "" {
-			// save select position
-			gui.EntryManager.SetSelectPos(current)
-
-			// update entries
-			gui.InputPath.SetText(parent)
-			gui.EntryManager.SetEntries(parent)
-			gui.EntryManager.SetOffset(0, 0)
-
-			// restore select position
-			gui.EntryManager.RestorePos(parent)
-
-			if gui.Config.Preview.Enable {
-				entry := gui.EntryManager.GetSelectEntry()
-				gui.Preview.UpdateView(gui, entry)
-			}
+			gui.ChangeDir(current, parent)
 		}
 
 	// go to selected dir
@@ -86,24 +72,8 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 		entry := gui.EntryManager.GetSelectEntry()
 
 		if entry != nil && entry.IsDir {
-			// save select position
-			gui.EntryManager.SetSelectPos(gui.InputPath.GetText())
-			gui.EntryManager.SetEntries(entry.PathName)
-
-			gui.InputPath.SetText(entry.PathName)
-
-			gui.EntryManager.RestorePos(entry.PathName)
-
-			row, _ := gui.EntryManager.GetSelection()
-			count := gui.EntryManager.GetRowCount()
-			if row > count {
-				gui.EntryManager.Select(count-1, 0)
-			}
-
-			if gui.Config.Preview.Enable {
-				entry := gui.EntryManager.GetSelectEntry()
-				gui.Preview.UpdateView(gui, entry)
-			}
+			current := gui.InputPath.GetText()
+			gui.ChangeDir(current, entry.PathName)
 		}
 	}
 }
@@ -324,6 +294,35 @@ func (gui *Gui) EntryManagerKeybinding() {
 	})
 }
 
+func (gui *Gui) ChangeDir(current, target string) {
+	// save select position
+	gui.EntryManager.SetSelectPos(current)
+
+	// update files
+	gui.InputPath.SetText(target)
+	gui.EntryManager.SetEntries(target)
+
+	// restore select position
+	gui.EntryManager.RestorePos(target)
+
+	// if current postion is over than bottom entry position
+	row, _ := gui.EntryManager.GetSelection()
+	count := gui.EntryManager.GetRowCount()
+	if row > count {
+		gui.EntryManager.Select(count-1, 0)
+	}
+
+	if gui.Config.Preview.Enable {
+		entry := gui.EntryManager.GetSelectEntry()
+		gui.Preview.UpdateView(gui, entry)
+	}
+
+	if err := os.Chdir(target); err != nil {
+		log.Println(err)
+		gui.Message(err.Error(), gui.EntryManager)
+	}
+}
+
 func (gui *Gui) EditFile(file string) error {
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
@@ -395,13 +394,18 @@ func (gui *Gui) InputPathKeybinding() {
 		}
 
 		if key == tcell.KeyEnter {
-			path := gui.InputPath.GetText()
-			path = os.ExpandEnv(path)
-			gui.InputPath.SetText(path)
-			//row, _ := gui.EntryManager.GetSelection()
-			//gui.HistoryManager.Save(row, path)
-			gui.EntryManager.SetEntries(path)
-			gui.FocusPanel(gui.EntryManager)
+			path := os.ExpandEnv(gui.InputPath.GetText())
+			file, err := os.Lstat(path)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			parent := filepath.Dir(path)
+			if parent != "" && file.IsDir() {
+				gui.ChangeDir(parent, path)
+				gui.FocusPanel(gui.EntryManager)
+			}
 		}
 
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
