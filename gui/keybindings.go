@@ -459,12 +459,16 @@ func (gui *Gui) CmdLineKeybinding() {
 	})
 }
 
+func (gui *Gui) CloseBookmark() {
+	gui.Pages.RemovePage("bookmark").ShowPage("main")
+	gui.FocusPanel(gui.EntryManager)
+}
+
 func (gui *Gui) BookmarkKeybinding() {
 	gui.Bookmark.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Rune() {
 		case 'q':
-			gui.Pages.RemovePage("bookmark").ShowPage("main")
-			gui.FocusPanel(gui.EntryManager)
+			gui.CloseBookmark()
 		case 'd':
 			entry := gui.Bookmark.GetSelectEntry()
 			if entry == nil {
@@ -484,10 +488,9 @@ func (gui *Gui) BookmarkKeybinding() {
 			if entry == nil {
 				return event
 			}
-			gui.InputPath.SetText(entry.Name)
-			gui.EntryManager.SetEntries(entry.Name)
-			gui.EntryManager.SetOffset(0, 0)
-			gui.EntryManager.RestorePos(entry.Name)
+
+			gui.ChangeDir(gui.InputPath.GetText(), entry.Name)
+			gui.CloseBookmark()
 		}
 
 		return event
