@@ -11,6 +11,11 @@ import (
 	"github.com/skanehira/ff/system"
 )
 
+var (
+	searchFiles     *tview.InputField
+	searchBookmarks *tview.InputField
+)
+
 // Register copy/paste file resource
 type Register struct {
 	MoveSources []*Entry
@@ -227,11 +232,12 @@ func (gui *Gui) Run() error {
 func (gui *Gui) Search() {
 	pageName := "search"
 	if gui.Pages.HasPage(pageName) {
+		searchFiles.SetText(gui.EntryManager.GetSearchWord())
 		gui.Pages.ShowPage(pageName)
 	} else {
-		input := tview.NewInputField()
-		input.SetBorder(true).SetTitle("search").SetTitleAlign(tview.AlignLeft)
-		input.SetChangedFunc(func(text string) {
+		searchFiles = tview.NewInputField()
+		searchFiles.SetBorder(true).SetTitle("search").SetTitleAlign(tview.AlignLeft)
+		searchFiles.SetChangedFunc(func(text string) {
 			gui.EntryManager.SetSearchWord(text)
 			current := gui.InputPath.GetText()
 			gui.EntryManager.SetEntries(current)
@@ -240,7 +246,7 @@ func (gui *Gui) Search() {
 				gui.Preview.UpdateView(gui, gui.EntryManager.GetSelectEntry())
 			}
 		})
-		input.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
+		searchFiles.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
 			if key == tcell.KeyEnter {
 				gui.Pages.HidePage(pageName)
 				gui.FocusPanel(gui.EntryManager)
@@ -248,22 +254,23 @@ func (gui *Gui) Search() {
 
 		})
 
-		gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(input, 0, 3), true).ShowPage("main")
+		gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(searchFiles, 0, 3), true).ShowPage("main")
 	}
 }
 
 func (gui *Gui) SearchBookmark() {
 	pageName := "search_bookmark"
 	if gui.Pages.HasPage(pageName) {
+		searchBookmarks.SetText(gui.Bookmark.GetSearchWord())
 		gui.Pages.SendToFront(pageName).ShowPage(pageName)
 	} else {
-		input := tview.NewInputField()
-		input.SetBorder(true).SetTitle("search bookmark").SetTitleAlign(tview.AlignLeft)
-		input.SetChangedFunc(func(text string) {
+		searchBookmarks = tview.NewInputField()
+		searchBookmarks.SetBorder(true).SetTitle("search bookmark").SetTitleAlign(tview.AlignLeft)
+		searchBookmarks.SetChangedFunc(func(text string) {
 			gui.Bookmark.SetSearchWord(text)
 			gui.Bookmark.UpdateView()
 		})
-		input.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
+		searchBookmarks.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
 			if key == tcell.KeyEnter {
 				gui.Pages.HidePage(pageName)
 				gui.FocusPanel(gui.Bookmark)
@@ -271,7 +278,7 @@ func (gui *Gui) SearchBookmark() {
 
 		})
 
-		gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(input, 0, 3), true).ShowPage("bookmark").ShowPage("main")
+		gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(searchBookmarks, 0, 3), true).ShowPage("bookmark").ShowPage("main")
 	}
 }
 

@@ -123,6 +123,10 @@ func (b *Bookmarks) SetSearchWord(word string) {
 	b.searchWord = word
 }
 
+func (b *Bookmarks) GetSearchWord() string {
+	return b.searchWord
+}
+
 func (b *Bookmarks) Add(name string) error {
 	bookmarks := Bookmark{
 		Name: name,

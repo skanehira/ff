@@ -295,6 +295,9 @@ func (gui *Gui) EntryManagerKeybinding() {
 }
 
 func (gui *Gui) ChangeDir(current, target string) {
+	gui.Bookmark.SetSearchWord("")
+	gui.EntryManager.SetSearchWord("")
+
 	// save select position
 	gui.EntryManager.SetSelectPos(current)
 

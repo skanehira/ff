@@ -72,6 +72,10 @@ func (e *EntryManager) SetSearchWord(word string) {
 	e.searchWord = word
 }
 
+func (e *EntryManager) GetSearchWord() string {
+	return e.searchWord
+}
+
 // SetSelectPos save select position
 func (e *EntryManager) SetSelectPos(path string) {
 	row, col := e.GetSelection()
