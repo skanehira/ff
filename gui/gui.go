@@ -222,7 +222,7 @@ func (gui *Gui) Run() error {
 	gui.Pages.AddAndSwitchToPage("main", grid, true)
 
 	if err := gui.App.SetRoot(gui.Pages, true).SetFocus(gui.EntryManager).Run(); err != nil {
-		gui.App.Stop()
+		gui.Stop()
 		return err
 	}
 
