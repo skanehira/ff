@@ -117,7 +117,6 @@ So, you only can executing command that doesn't use stdin, stdout, stderr.
 | key      | operation                            |
 |----------|--------------------------------------|
 | `tab`    | focus to files                       |
-| `tab`    | focus to path                        |
 | `j`      | move to next                         |
 | `k`      | move to previous                     |
 | `g`      | move to top                          |
