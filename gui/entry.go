@@ -2,6 +2,7 @@ package gui
 
 import (
 	"io/ioutil"
+	"os"
 	"os/user"
 	"path/filepath"
 	"strconv"
@@ -257,4 +258,14 @@ func (e *EntryManager) UpdateColor() {
 		}
 	}
 
+}
+
+func (e *EntryManager) UpdateView() {
+	current, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	e.SetEntries(current)
 }

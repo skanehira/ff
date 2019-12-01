@@ -1,7 +1,10 @@
 package gui
 
 import (
+	"context"
 	"os"
+	"sync"
+	"time"
 
 	"log"
 	"os/exec"
@@ -45,6 +48,8 @@ type Gui struct {
 	Bookmark       *Bookmarks
 	App            *tview.Application
 	Pages          *tview.Pages
+	wg             *sync.WaitGroup
+	ctxCancel      context.CancelFunc
 }
 
 func hasEntry(gui *Gui) bool {
@@ -65,6 +70,7 @@ func New(config Config) *Gui {
 		App:            tview.NewApplication(),
 		Register:       &Register{},
 		Pages:          tview.NewPages(),
+		wg:             &sync.WaitGroup{},
 	}
 
 	if gui.Config.Preview.Enable {
@@ -97,6 +103,8 @@ func (gui *Gui) ExecCmd(attachStd bool, cmd string, args ...string) error {
 
 // Stop stop ff
 func (gui *Gui) Stop() {
+	gui.ctxCancel()
+	gui.wg.Wait()
 	gui.App.Stop()
 }
 
@@ -220,6 +228,30 @@ func (gui *Gui) Run() error {
 
 	gui.SetKeybindings()
 	gui.Pages.AddAndSwitchToPage("main", grid, true)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	gui.ctxCancel = cancel
+
+	gui.wg.Add(1)
+	go func(ctx context.Context) {
+		t := time.NewTicker(5 * time.Second)
+		defer func() {
+			t.Stop()
+			gui.wg.Done()
+		}()
+
+		for {
+			select {
+			case <-t.C:
+				gui.App.QueueUpdateDraw(func() {
+					gui.EntryManager.UpdateView()
+				})
+			case <-ctx.Done():
+				return
+			}
+		}
+
+	}(ctx)
 
 	if err := gui.App.SetRoot(gui.Pages, true).SetFocus(gui.EntryManager).Run(); err != nil {
 		gui.Stop()
