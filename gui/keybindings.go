@@ -79,12 +79,7 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 }
 
 func (gui *Gui) EntryManagerKeybinding() {
-	gui.EntryManager.SetDoneFunc(func(key tcell.Key) {
-		if key == tcell.KeyEscape {
-			gui.App.Stop()
-		}
-
-	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	gui.EntryManager.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		gui.GlobalKeybinding(event)
 
 		if gui.Config.Preview.Enable {
@@ -392,10 +387,6 @@ func (gui *Gui) InputPathKeybinding() {
 	})
 
 	gui.InputPath.SetDoneFunc(func(key tcell.Key) {
-		if key == tcell.KeyEscape {
-			gui.App.Stop()
-		}
-
 		if key == tcell.KeyEnter {
 			path := os.ExpandEnv(gui.InputPath.GetText())
 			file, err := os.Lstat(path)
