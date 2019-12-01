@@ -329,7 +329,7 @@ func (gui *Gui) EditFile(file string) error {
 
 	// if `ff` running in vim terminal, use running vim
 	if os.Getenv("VIM_TERMINAL") != "" && editor == "vim" {
-		cmd := exec.Command("sh", "-c", fmt.Sprintf(`echo '\x1b]51;["drop","%s"]\x07'`, file))
+		cmd := exec.Command("sh", "-c", fmt.Sprintf(`echo -e '\x1b]51;["drop","%s"]\x07'`, file))
 		cmd.Stdout = os.Stdout
 		return cmd.Run()
 	}
