@@ -64,7 +64,9 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 		parent := filepath.Dir(current)
 
 		if parent != "" {
-			gui.ChangeDir(current, parent)
+			if err := gui.ChangeDir(current, parent); err != nil {
+				gui.Message(err.Error(), gui.EntryManager)
+			}
 		}
 
 	// go to selected dir
@@ -73,7 +75,9 @@ func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
 
 		if entry != nil && entry.IsDir {
 			current := gui.InputPath.GetText()
-			gui.ChangeDir(current, entry.PathName)
+			if err := gui.ChangeDir(current, entry.PathName); err != nil {
+				gui.Message(err.Error(), gui.EntryManager)
+			}
 		}
 	}
 }
@@ -289,7 +293,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 	})
 }
 
-func (gui *Gui) ChangeDir(current, target string) {
+func (gui *Gui) ChangeDir(current, target string) error {
 	if gui.Config.Bookmark.Enable {
 		gui.Bookmark.SetSearchWord("")
 	}
@@ -301,9 +305,6 @@ func (gui *Gui) ChangeDir(current, target string) {
 	// update files
 	gui.InputPath.SetText(target)
 	gui.EntryManager.SetEntries(target)
-
-	// restore select position
-	gui.EntryManager.RestorePos(target)
 
 	// if current postion is over than bottom entry position
 	row, _ := gui.EntryManager.GetSelection()
@@ -319,8 +320,13 @@ func (gui *Gui) ChangeDir(current, target string) {
 
 	if err := os.Chdir(target); err != nil {
 		log.Println(err)
-		gui.Message(err.Error(), gui.EntryManager)
+		return err
 	}
+
+	// restore select position
+	gui.EntryManager.RestorePos(target)
+
+	return nil
 }
 
 func (gui *Gui) EditFile(file string) error {
@@ -399,7 +405,10 @@ func (gui *Gui) InputPathKeybinding() {
 
 			parent := filepath.Dir(path)
 			if parent != "" && file.IsDir() {
-				gui.ChangeDir(parent, path)
+				if err := gui.ChangeDir(parent, path); err != nil {
+					gui.Message(err.Error(), gui.EntryManager)
+					return
+				}
 				gui.FocusPanel(gui.EntryManager)
 			}
 		}
@@ -485,7 +494,10 @@ func (gui *Gui) BookmarkKeybinding() {
 				return event
 			}
 
-			gui.ChangeDir(gui.InputPath.GetText(), entry.Name)
+			if err := gui.ChangeDir(gui.InputPath.GetText(), entry.Name); err != nil {
+				gui.Message(err.Error(), gui.Bookmark)
+				return event
+			}
 			gui.CloseBookmark()
 		}
 
