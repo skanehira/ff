@@ -19,6 +19,15 @@ var (
 	searchBookmarks *tview.InputField
 )
 
+type Panel int
+
+const (
+	PathPanel Panel = iota + 1
+	FilesPanel
+	CmdLinePanel
+	BookmarkPanel
+)
+
 // Register copy/paste file resource
 type Register struct {
 	MoveSources []*Entry
@@ -38,6 +47,7 @@ func (r *Register) ClearCopyResources() {
 
 // Gui gui have some manager
 type Gui struct {
+	CurrentPanel   Panel
 	Config         Config
 	InputPath      *tview.InputField
 	Register       *Register
@@ -46,6 +56,7 @@ type Gui struct {
 	Preview        *Preview
 	CmdLine        *CmdLine
 	Bookmark       *Bookmarks
+	Help           *Help
 	App            *tview.Application
 	Pages          *tview.Pages
 	wg             *sync.WaitGroup
@@ -67,6 +78,7 @@ func New(config Config) *Gui {
 		EntryManager:   NewEntryManager(config.IgnoreCase),
 		HistoryManager: NewHistoryManager(),
 		CmdLine:        NewCmdLine(),
+		Help:           NewHelp(),
 		App:            tview.NewApplication(),
 		Register:       &Register{},
 		Pages:          tview.NewPages(),
@@ -108,20 +120,20 @@ func (gui *Gui) Stop() {
 	gui.App.Stop()
 }
 
-func (gui *Gui) Message(message string, page tview.Primitive) {
+func (gui *Gui) Message(message string, panel Panel) {
 	doneLabel := "ok"
 	modal := tview.NewModal().
 		SetText(message).
 		AddButtons([]string{doneLabel}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			gui.Pages.RemovePage("message")
-			gui.App.SetFocus(page)
+			gui.FocusPanel(panel)
 		})
 
 	gui.Pages.AddAndSwitchToPage("message", gui.Modal(modal, 80, 29), true).ShowPage("main")
 }
 
-func (gui *Gui) Confirm(message, doneLabel string, page tview.Primitive, doneFunc func() error) {
+func (gui *Gui) Confirm(message, doneLabel string, panel Panel, doneFunc func() error) {
 	modal := tview.NewModal().
 		SetText(message).
 		AddButtons([]string{doneLabel, "cancel"}).
@@ -132,13 +144,13 @@ func (gui *Gui) Confirm(message, doneLabel string, page tview.Primitive, doneFun
 				gui.App.QueueUpdateDraw(func() {
 					if err := doneFunc(); err != nil {
 						log.Println(err)
-						gui.Message(err.Error(), page)
+						gui.Message(err.Error(), panel)
 					} else {
-						gui.App.SetFocus(page)
+						gui.FocusPanel(panel)
 					}
 				})
 			}
-			gui.App.SetFocus(page)
+			gui.FocusPanel(panel)
 		})
 	gui.Pages.AddAndSwitchToPage("confirm", gui.Modal(modal, 50, 29), true).ShowPage("main")
 }
@@ -150,11 +162,24 @@ func (gui *Gui) Modal(p tview.Primitive, width, height int) tview.Primitive {
 		AddItem(p, 1, 1, 1, 1, 0, 0, true)
 }
 
-func (gui *Gui) FocusPanel(p tview.Primitive) {
+func (gui *Gui) FocusPanel(panel Panel) {
+	var p tview.Primitive
+	switch panel {
+	case PathPanel:
+		p = gui.InputPath
+	case FilesPanel:
+		p = gui.EntryManager
+	case CmdLinePanel:
+		p = gui.CmdLine
+	case BookmarkPanel:
+		p = gui.Bookmark
+	}
+
+	gui.CurrentPanel = panel
 	gui.App.SetFocus(p)
 }
 
-func (gui *Gui) Form(fieldLabel map[string]string, doneLabel, title, pageName string, panel tview.Primitive,
+func (gui *Gui) Form(fieldLabel map[string]string, doneLabel, title, pageName string, panel Panel,
 	height int, doneFunc func(values map[string]string) error) {
 
 	form := tview.NewForm()
@@ -205,12 +230,7 @@ func (gui *Gui) Run() error {
 		return err
 	}
 
-	gui.InputPath.SetText(currentDir)
-
-	gui.HistoryManager.Save(0, currentDir)
-	gui.EntryManager.SetEntries(currentDir)
-
-	gui.EntryManager.Select(1, 0)
+	gui.ChangeDir(currentDir, currentDir)
 
 	grid := tview.NewGrid().SetRows(1, 0, 1).
 		AddItem(gui.InputPath, 0, 0, 1, 2, 0, 0, true).
@@ -226,6 +246,7 @@ func (gui *Gui) Run() error {
 		grid.AddItem(gui.EntryManager, 1, 0, 1, 2, 0, 0, true)
 	}
 
+	gui.CurrentPanel = FilesPanel
 	gui.SetKeybindings()
 	gui.Pages.AddAndSwitchToPage("main", grid, true)
 
@@ -281,7 +302,7 @@ func (gui *Gui) Search() {
 		searchFiles.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
 			if key == tcell.KeyEnter {
 				gui.Pages.HidePage(pageName)
-				gui.FocusPanel(gui.EntryManager)
+				gui.FocusPanel(FilesPanel)
 			}
 
 		})
@@ -305,7 +326,7 @@ func (gui *Gui) SearchBookmark() {
 		searchBookmarks.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
 			if key == tcell.KeyEnter {
 				gui.Pages.HidePage(pageName)
-				gui.FocusPanel(gui.Bookmark)
+				gui.FocusPanel(BookmarkPanel)
 			}
 
 		})
@@ -315,7 +336,7 @@ func (gui *Gui) SearchBookmark() {
 }
 
 func (gui *Gui) AddBookmark() {
-	gui.Form(map[string]string{"path": ""}, "add", "new bookmark", "new_bookmark", gui.Bookmark,
+	gui.Form(map[string]string{"path": ""}, "add", "new bookmark", "new_bookmark", BookmarkPanel,
 		7, func(values map[string]string) error {
 			name := values["path"]
 			if name == "" {

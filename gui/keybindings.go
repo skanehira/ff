@@ -28,14 +28,11 @@ func (gui *Gui) SetKeybindings() {
 	gui.EntryManagerKeybinding()
 	gui.CmdLineKeybinding()
 
+	gui.HelpKeybinding()
+
 	if gui.Config.Bookmark.Enable {
 		gui.BookmarkKeybinding()
 	}
-}
-
-// globalKeybinding
-func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
-	// TODO display help panel
 }
 
 func (gui *Gui) EntryManagerKeybinding() {
@@ -55,13 +52,16 @@ func (gui *Gui) EntryManagerKeybinding() {
 		}
 
 		switch event.Rune() {
+		case '?':
+			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
+
 		case 'h':
 			current := gui.InputPath.GetText()
 			parent := filepath.Dir(current)
 
 			if parent != "" {
 				if err := gui.ChangeDir(current, parent); err != nil {
-					gui.Message(err.Error(), gui.EntryManager)
+					gui.Message(err.Error(), FilesPanel)
 				}
 			}
 
@@ -72,7 +72,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 			if entry != nil && entry.IsDir {
 				current := gui.InputPath.GetText()
 				if err := gui.ChangeDir(current, entry.PathName); err != nil {
-					gui.Message(err.Error(), gui.EntryManager)
+					gui.Message(err.Error(), FilesPanel)
 				}
 			}
 		case 'd':
@@ -80,7 +80,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 				return event
 			}
 
-			gui.Confirm("do you want to remove this?", "yes", gui.EntryManager, func() error {
+			gui.Confirm("do you want to remove this?", "yes", FilesPanel, func() error {
 				entry := gui.EntryManager.GetSelectEntry()
 				if entry == nil {
 					return nil
@@ -124,7 +124,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 			if gui.Register.CopySource != nil {
 				source := gui.Register.CopySource
 
-				gui.Form(map[string]string{"name": source.Name}, "paste", "new name", "new_name", gui.EntryManager,
+				gui.Form(map[string]string{"name": source.Name}, "paste", "new name", "new_name", FilesPanel,
 					7, func(values map[string]string) error {
 						name := values["name"]
 						if name == "" {
@@ -152,12 +152,12 @@ func (gui *Gui) EntryManagerKeybinding() {
 			}
 
 			if err := gui.EditFile(entry.PathName); err != nil {
-				gui.Message(err.Error(), gui.EntryManager)
+				gui.Message(err.Error(), FilesPanel)
 			}
 
 		case 'm':
 			gui.Form(map[string]string{"name": ""}, "create", "new direcotry",
-				"create_directory", gui.EntryManager,
+				"create_directory", FilesPanel,
 				7, func(values map[string]string) error {
 					name := values["name"]
 					if name == "" {
@@ -179,7 +179,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 				return event
 			}
 
-			gui.Form(map[string]string{"new name": entry.Name}, "rename", "new name", "rename", gui.EntryManager,
+			gui.Form(map[string]string{"new name": entry.Name}, "rename", "new name", "rename", FilesPanel,
 				7, func(values map[string]string) error {
 					name := values["new name"]
 					if name == "" {
@@ -198,7 +198,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 				})
 
 		case 'n':
-			gui.Form(map[string]string{"name": ""}, "create", "new file", "create_file", gui.EntryManager,
+			gui.Form(map[string]string{"name": ""}, "create", "new file", "create_file", FilesPanel,
 				7, func(values map[string]string) error {
 					name := values["name"]
 					if name == "" {
@@ -223,18 +223,18 @@ func (gui *Gui) EntryManagerKeybinding() {
 				return event
 			}
 			if err := system.Open(entry.PathName); err != nil {
-				gui.Message(err.Error(), gui.EntryManager)
+				gui.Message(err.Error(), FilesPanel)
 			}
 
 		case 'f', '/':
 			gui.Search()
 
 		case ':', 'c':
-			gui.FocusPanel(gui.CmdLine)
+			gui.FocusPanel(CmdLinePanel)
 
 		case '.':
 			if err := gui.EditFile(gui.Config.ConfigFile); err != nil {
-				gui.Message(err.Error(), gui.EntryManager)
+				gui.Message(err.Error(), FilesPanel)
 			}
 
 		case 'b':
@@ -242,7 +242,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 				entry := gui.EntryManager.GetSelectEntry()
 				if entry != nil && entry.IsDir {
 					if err := gui.Bookmark.Add(entry.PathName); err != nil {
-						gui.Message(err.Error(), gui.EntryManager)
+						gui.Message(err.Error(), FilesPanel)
 					}
 				}
 			}
@@ -250,7 +250,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 		case 'B':
 			if gui.Config.Bookmark.Enable {
 				if err := gui.Bookmark.Update(); err != nil {
-					gui.Message(err.Error(), gui.EntryManager)
+					gui.Message(err.Error(), FilesPanel)
 					return event
 				}
 				gui.Pages.AddAndSwitchToPage("bookmark", gui.Bookmark, true).ShowPage("main")
@@ -385,19 +385,12 @@ func (gui *Gui) InputPathKeybinding() {
 			parent := filepath.Dir(path)
 			if parent != "" && file.IsDir() {
 				if err := gui.ChangeDir(parent, path); err != nil {
-					gui.Message(err.Error(), gui.EntryManager)
+					gui.Message(err.Error(), FilesPanel)
 					return
 				}
-				gui.FocusPanel(gui.EntryManager)
+				gui.FocusPanel(FilesPanel)
 			}
 		}
-
-	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		//if event.Key() == tcell.KeyTab {
-		//	gui.App.SetFocus(gui.EntryManager)
-		//}
-
-		return event
 	})
 }
 
@@ -428,7 +421,7 @@ func (gui *Gui) CmdLineKeybinding() {
 
 		result := strings.TrimRight(buf.String(), "\n")
 		if result != "" {
-			gui.Message(result, cmdline)
+			gui.Message(result, CmdLinePanel)
 		}
 
 		gui.EntryManager.SetEntries(gui.InputPath.GetText())
@@ -445,7 +438,7 @@ func (gui *Gui) CmdLineKeybinding() {
 
 func (gui *Gui) CloseBookmark() {
 	gui.Pages.RemovePage("bookmark").ShowPage("main")
-	gui.FocusPanel(gui.EntryManager)
+	gui.FocusPanel(FilesPanel)
 }
 
 func (gui *Gui) BookmarkKeybinding() {
@@ -474,12 +467,23 @@ func (gui *Gui) BookmarkKeybinding() {
 			}
 
 			if err := gui.ChangeDir(gui.InputPath.GetText(), entry.Name); err != nil {
-				gui.Message(err.Error(), gui.Bookmark)
+				gui.Message(err.Error(), BookmarkPanel)
 				return event
 			}
 			gui.CloseBookmark()
 		}
 
+		return event
+	})
+}
+
+func (gui *Gui) HelpKeybinding() {
+	gui.Help.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Rune() {
+		case 'q':
+			gui.Pages.RemovePage("help").ShowPage("main")
+			gui.FocusPanel(gui.CurrentPanel)
+		}
 		return event
 	})
 }
