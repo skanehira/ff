@@ -114,32 +114,32 @@ So, you only can executing command that doesn't use stdin, stdout, stderr.
 | `Enter` | change directory |
 
 ### files
-| key      | operation                            |
-|----------|--------------------------------------|
-| `tab`    | focus to files                       |
-| `j`      | move to next                         |
-| `k`      | move to previous                     |
-| `g`      | move to top                          |
-| `G`      | move to bottom                       |
-| `ctrl-b` | move previous page                   |
-| `ctrl-f` | move netxt page                      |
-| `h`      | cd to specified path                 |
-| `l`      | cd to parent path                    |
-| `y`      | copy selected file                   |
-| `p`      | paste copy file to current directory |
-| `d`      | delete selected file or directory    |
-| `m`      | make a new dir                       |
-| `n`      | make a new file                      |
-| `r`      | rename a dir or file                 |
-| `e`      | edit file with `$EDITOR`             |
-| `o`      | open file or directory               |
-| `f`/`/`  | search files or directories          |
-| `ctrl-j` | scroll preview panel down            |
-| `ctrl-k` | scroll preview panel up              |
-| `c`/`:`  | focus cmdline panel                  |
-| `.`      | edit config.yaml                     |
-| `b`      | bookmark dirctory                    |
-| `B`      | open bookmarks panel                 |
+| key      | operation                         |
+|----------|-----------------------------------|
+| `tab`    | focus to files                    |
+| `j`      | move to next                      |
+| `k`      | move to previous                  |
+| `g`      | move to top                       |
+| `G`      | move to bottom                    |
+| `ctrl-b` | move previous page                |
+| `ctrl-f` | move netxt page                   |
+| `h`      | cd to parent path                 |
+| `l`      | cd to specified path              |
+| `y`      | copy selected file or directory   |
+| `p`      | paste file or directory           |
+| `d`      | delete selected file or directory |
+| `m`      | make a new directory              |
+| `n`      | make a new file                   |
+| `r`      | rename a directory or file        |
+| `e`      | edit file with `$EDITOR`          |
+| `o`      | open file or directory            |
+| `f`/`/`  | search files or directories       |
+| `ctrl-j` | scroll preview panel down         |
+| `ctrl-k` | scroll preview panel up           |
+| `c`/`:`  | focus cmdline panel               |
+| `.`      | edit config.yaml                  |
+| `b`      | bookmark dirctory                 |
+| `B`      | open bookmarks panel              |
 
 ### bookmark
 | key      | operation             |
