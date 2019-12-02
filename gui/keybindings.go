@@ -35,57 +35,11 @@ func (gui *Gui) SetKeybindings() {
 
 // globalKeybinding
 func (gui *Gui) GlobalKeybinding(event *tcell.EventKey) {
-	switch {
-	// go to input view
-	case event.Key() == tcell.KeyTab:
-		gui.App.SetFocus(gui.InputPath)
-
-	// go to previous history
-	//case event.Key() == tcell.KeyCtrlH:
-	//	history := gui.HistoryManager.Previous()
-	//	if history != nil {
-	//		gui.InputPath.SetText(history.Path)
-	//		gui.EntryManager.SetEntries(history.Path)
-	//		gui.EntryManager.Select(history.RowIdx, 0)
-	//	}
-
-	//// go to next history
-	//case event.Key() == tcell.KeyCtrlL:
-	//	history := gui.HistoryManager.Next()
-	//	if history != nil {
-	//		gui.InputPath.SetText(history.Path)
-	//		gui.EntryManager.SetEntries(history.Path)
-	//		gui.EntryManager.Select(history.RowIdx, 0)
-	//	}
-
-	// go to parent dir
-	case event.Rune() == 'h':
-		current := gui.InputPath.GetText()
-		parent := filepath.Dir(current)
-
-		if parent != "" {
-			if err := gui.ChangeDir(current, parent); err != nil {
-				gui.Message(err.Error(), gui.EntryManager)
-			}
-		}
-
-	// go to selected dir
-	case event.Rune() == 'l':
-		entry := gui.EntryManager.GetSelectEntry()
-
-		if entry != nil && entry.IsDir {
-			current := gui.InputPath.GetText()
-			if err := gui.ChangeDir(current, entry.PathName); err != nil {
-				gui.Message(err.Error(), gui.EntryManager)
-			}
-		}
-	}
+	// TODO display help panel
 }
 
 func (gui *Gui) EntryManagerKeybinding() {
 	gui.EntryManager.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		gui.GlobalKeybinding(event)
-
 		if gui.Config.Preview.Enable {
 			switch event.Key() {
 			case tcell.KeyCtrlJ:
@@ -95,7 +49,32 @@ func (gui *Gui) EntryManagerKeybinding() {
 			}
 		}
 
+		switch event.Key() {
+		case tcell.KeyTab:
+			gui.App.SetFocus(gui.InputPath)
+		}
+
 		switch event.Rune() {
+		case 'h':
+			current := gui.InputPath.GetText()
+			parent := filepath.Dir(current)
+
+			if parent != "" {
+				if err := gui.ChangeDir(current, parent); err != nil {
+					gui.Message(err.Error(), gui.EntryManager)
+				}
+			}
+
+		// go to selected dir
+		case 'l':
+			entry := gui.EntryManager.GetSelectEntry()
+
+			if entry != nil && entry.IsDir {
+				current := gui.InputPath.GetText()
+				if err := gui.ChangeDir(current, entry.PathName); err != nil {
+					gui.Message(err.Error(), gui.EntryManager)
+				}
+			}
 		case 'd':
 			if !hasEntry(gui) {
 				return event
