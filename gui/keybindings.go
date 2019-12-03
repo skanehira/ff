@@ -49,10 +49,14 @@ func (gui *Gui) EntryManagerKeybinding() {
 		switch event.Key() {
 		case tcell.KeyTab:
 			gui.App.SetFocus(gui.InputPath)
+		case tcell.KeyF1:
+			gui.Help.UpdateView(FilesPanel)
+			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
 		}
 
 		switch event.Rune() {
 		case '?':
+			gui.Help.UpdateView(FilesPanel)
 			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
 
 		case 'h':
@@ -253,6 +257,7 @@ func (gui *Gui) EntryManagerKeybinding() {
 					gui.Message(err.Error(), FilesPanel)
 					return event
 				}
+				gui.CurrentPanel = BookmarkPanel
 				gui.Pages.AddAndSwitchToPage("bookmark", gui.Bookmark, true).ShowPage("main")
 			}
 		}
@@ -392,6 +397,17 @@ func (gui *Gui) InputPathKeybinding() {
 			}
 		}
 	})
+
+	gui.InputPath.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyF1:
+			gui.CurrentPanel = PathPanel
+			gui.Help.UpdateView(gui.CurrentPanel)
+			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
+
+		}
+		return event
+	})
 }
 
 func (gui *Gui) CmdLineKeybinding() {
@@ -430,6 +446,10 @@ func (gui *Gui) CmdLineKeybinding() {
 		case tcell.KeyTab, tcell.KeyEsc:
 			gui.App.SetFocus(gui.EntryManager)
 			return event
+		case tcell.KeyF1:
+			gui.CurrentPanel = CmdLinePanel
+			gui.Help.UpdateView(gui.CurrentPanel)
+			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
 		}
 
 		return event
@@ -457,9 +477,15 @@ func (gui *Gui) BookmarkKeybinding() {
 			gui.SearchBookmark()
 		case 'a':
 			gui.AddBookmark()
+		case '?':
+			gui.Help.UpdateView(BookmarkPanel)
+			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("bookmark")
 		}
 
 		switch event.Key() {
+		case tcell.KeyF1:
+			gui.Help.UpdateView(BookmarkPanel)
+			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("bookmark")
 		case tcell.KeyCtrlG:
 			entry := gui.Bookmark.GetSelectEntry()
 			if entry == nil {
@@ -481,7 +507,7 @@ func (gui *Gui) HelpKeybinding() {
 	gui.Help.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Rune() {
 		case 'q':
-			gui.Pages.RemovePage("help").ShowPage("main")
+			gui.Pages.RemovePage("help")
 			gui.FocusPanel(gui.CurrentPanel)
 		}
 		return event
