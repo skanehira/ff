@@ -112,49 +112,53 @@ So, you only can executing command that doesn't use stdin, stdout, stderr.
 | key     | operation        |
 |---------|------------------|
 | `Enter` | change directory |
+| `F1`    | open help panel  |
 
 ### files
-| key      | operation                         |
-|----------|-----------------------------------|
-| `tab`    | focus to files                    |
-| `j`      | move to next                      |
-| `k`      | move to previous                  |
-| `g`      | move to top                       |
-| `G`      | move to bottom                    |
-| `ctrl-b` | move previous page                |
-| `ctrl-f` | move netxt page                   |
-| `h`      | cd to parent path                 |
-| `l`      | cd to specified path              |
-| `y`      | copy selected file or directory   |
-| `p`      | paste file or directory           |
-| `d`      | delete selected file or directory |
-| `m`      | make a new directory              |
-| `n`      | make a new file                   |
-| `r`      | rename a directory or file        |
-| `e`      | edit file with `$EDITOR`          |
-| `o`      | open file or directory            |
-| `f`/`/`  | search files or directories       |
-| `ctrl-j` | scroll preview panel down         |
-| `ctrl-k` | scroll preview panel up           |
-| `c`/`:`  | focus cmdline panel               |
-| `.`      | edit config.yaml                  |
-| `b`      | bookmark dirctory                 |
-| `B`      | open bookmarks panel              |
+| key         | operation                         |
+|-------------|-----------------------------------|
+| `tab`       | focus to files                    |
+| `j`         | move to next                      |
+| `k`         | move to previous                  |
+| `g`         | move to top                       |
+| `G`         | move to bottom                    |
+| `ctrl-b`    | move previous page                |
+| `ctrl-f`    | move netxt page                   |
+| `h`         | cd to parent path                 |
+| `l`         | cd to specified path              |
+| `y`         | copy selected file or directory   |
+| `p`         | paste file or directory           |
+| `d`         | delete selected file or directory |
+| `m`         | make a new directory              |
+| `n`         | make a new file                   |
+| `r`         | rename a directory or file        |
+| `e`         | edit file with `$EDITOR`          |
+| `o`         | open file or directory            |
+| `f` or `/`  | search files or directories       |
+| `ctrl-j`    | scroll preview panel down         |
+| `ctrl-k`    | scroll preview panel up           |
+| `c` or `:`  | focus cmdline panel               |
+| `.`         | edit config.yaml                  |
+| `b`         | bookmark dirctory                 |
+| `B`         | open bookmarks panel              |
+| `F1` or `?` | open help panel                   |
 
 ### bookmark
-| key      | operation             |
-|----------|-----------------------|
-| `a`      | add bookmark          |
-| `d`      | delete bookmark       |
-| `q`      | close bookmarks panel |
-| `ctrl-g` | go to bookmark        |
-| `f`/`/`  | search bookmarks      |
+| key         | operation             |
+|-------------|-----------------------|
+| `a`         | add bookmark          |
+| `d`         | delete bookmark       |
+| `q`         | close bookmarks panel |
+| `ctrl-g`    | go to bookmark        |
+| `f`/`/`     | search bookmarks      |
+| `F1` or `?` | open help panel       |
 
 ### cmd
 | key         | operation         |
 |-------------|-------------------|
 | `enter`     | executing command |
 | `tab`/`esc` | focus files       |
+| `F1`        | open help panel   |
 
 # Author
 skanehira
