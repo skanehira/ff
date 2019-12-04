@@ -23,6 +23,7 @@ type Config struct {
 	Preview    PreviewConfig  `yaml:"preview"`
 	Bookmark   BookmarkConfig `yaml:"bookmark"`
 	IgnoreCase bool           `yaml:"ignore_case"`
+	OpenCmd    string         `yaml:"open_cmd"`
 }
 
 func DefaultConfig() Config {

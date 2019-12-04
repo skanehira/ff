@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"runtime"
 
 	"github.com/otiai10/copy"
 )
@@ -18,7 +17,7 @@ var (
 	ErrFileNotExists = errors.New("file is not exists")
 )
 
-var openCmd = os.Getenv("FF_OPEN_CMD")
+var OpenCmd string
 
 func Copy(src, target string) error {
 	return copy.Copy(src, target)
@@ -83,17 +82,7 @@ func RemoveDirAll(dir string) error {
 }
 
 func Open(name string) error {
-	open := openCmd
-	if open == "" {
-		switch runtime.GOOS {
-		case "darwin":
-			open = "open"
-		case "linux":
-			open = "xdg-open"
-		}
-	}
-
-	cmd := exec.Command(open, name)
+	cmd := exec.Command(OpenCmd, name)
 	buf := bytes.Buffer{}
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf

@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/skanehira/ff/gui"
 	"github.com/skanehira/ff/system"
@@ -75,6 +76,16 @@ func initConfig() gui.Config {
 		config.IgnoreCase = *ignorecase
 	}
 
+	if config.OpenCmd == "" {
+		switch runtime.GOOS {
+		case "darwin":
+			system.OpenCmd = "open"
+		case "linux":
+			system.OpenCmd = "xdg-open"
+		}
+	} else {
+		system.OpenCmd = config.OpenCmd
+	}
 	return config
 }
 
