@@ -76,6 +76,10 @@ ignore_case: true
 bookmark:
   enable: true
   file: $XDG_CONFIG_HOME/ff/bookmark.db
+
+# if you use `o` to open file or directory, default ff will using `open` in MacOS, `xdg-open` in Linux.
+# you can set this option to change open command.
+open_mcd: open
 ```
 
 The `config.yaml` should be placed in the following path.
@@ -97,10 +101,6 @@ The inmemory mode will save bookmark to memory, so if `ff` quit bookmarks will l
 ## About Edit file
 If you runing `ff` in Vim's terminal and `$EDITOR` is `vim`,
 `ff` will use running Vim to edit file.
-
-## About open action
-If you use `o` to open file or directory, ff will using `open` in MacOS, `xdg-open` in Linux.
-You can set environment variable `FF_OPEN_CMD` to change open command.
 
 ## About executing command
 `ff` can executing command, but it can't use stdin, stdout, stderr.
