@@ -20,6 +20,7 @@ var (
 	enableLog     = flag.Bool("log", false, "enable log")
 	enablePreview = flag.Bool("preview", false, "enable preview panel")
 	ignorecase    = flag.Bool("ignorecase", false, "ignore case when searcing")
+	enableTree    = flag.Bool("tree", false, "use tree mode")
 )
 
 var (
@@ -74,6 +75,10 @@ func initConfig() gui.Config {
 
 	if *ignorecase {
 		config.IgnoreCase = *ignorecase
+	}
+
+	if *enableTree {
+		config.EnableTree = *enableTree
 	}
 
 	if config.OpenCmd == "" {

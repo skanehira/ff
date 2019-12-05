@@ -56,6 +56,7 @@ type Gui struct {
 	Preview        *Preview
 	CmdLine        *CmdLine
 	Bookmark       *Bookmarks
+	Tree           *Tree
 	Help           *Help
 	App            *tview.Application
 	Pages          *tview.Pages

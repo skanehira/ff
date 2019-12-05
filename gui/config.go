@@ -24,6 +24,7 @@ type Config struct {
 	Bookmark   BookmarkConfig `yaml:"bookmark"`
 	IgnoreCase bool           `yaml:"ignore_case"`
 	OpenCmd    string         `yaml:"open_cmd"`
+	EnableTree bool           `yaml:"enable_tree"`
 }
 
 func DefaultConfig() Config {
@@ -40,5 +41,6 @@ func DefaultConfig() Config {
 			Log:    false,
 		},
 		IgnoreCase: false,
+		EnableTree: false,
 	}
 }
