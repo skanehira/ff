@@ -8,8 +8,8 @@ type FileBrowser interface {
 	SetSearchWord(word string)
 	SearchFiles(gui *Gui)
 	UpdateView()
-	GetSelectEntry() *Entry
-	SetEntries(text string) []*Entry
+	GetSelectEntry() *File
+	SetEntries(path string) []*File
 	ChangeDir(gui *Gui, current, target string) error
 	Keybinding(gui *Gui)
 }

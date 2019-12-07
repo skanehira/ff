@@ -30,7 +30,7 @@ type selectPos struct {
 // FileTable file list
 type FileTable struct {
 	enableIgnorecase bool
-	entries          []*Entry
+	entries          []*File
 	selectPos        map[string]selectPos
 	searchWord       string
 	*tview.Table
@@ -50,7 +50,7 @@ func NewFileTable(enableIgnorecase bool) *FileTable {
 }
 
 // Entries get entries
-func (e *FileTable) Entries() []*Entry {
+func (e *FileTable) Entries() []*File {
 	return e.entries
 }
 
@@ -79,8 +79,8 @@ func (e *FileTable) RestorePos(path string) {
 }
 
 // SetEntries set entries
-func (e *FileTable) SetEntries(path string) []*Entry {
-	var entries []*Entry
+func (e *FileTable) SetEntries(path string) []*File {
+	var entries []*File
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -143,7 +143,7 @@ func (e *FileTable) SetEntries(path string) []*Entry {
 		}
 
 		// create entriey
-		entries = append(entries, &Entry{
+		entries = append(entries, &File{
 			Name:       file.Name(),
 			Access:     access,
 			Create:     create,
@@ -213,7 +213,7 @@ func (e *FileTable) SetColumns() {
 }
 
 // GetSelectEntry get selected entry
-func (e *FileTable) GetSelectEntry() *Entry {
+func (e *FileTable) GetSelectEntry() *File {
 	row, _ := e.GetSelection()
 	if len(e.entries) == 0 {
 		return nil

@@ -28,19 +28,19 @@ const (
 
 // Register copy/paste file resource
 type Register struct {
-	MoveSources []*Entry
-	CopySources []*Entry
-	CopySource  *Entry
+	MoveSources []*File
+	CopySources []*File
+	CopySource  *File
 }
 
 // ClearMoveResources clear resources
 func (r *Register) ClearMoveResources() {
-	r.MoveSources = []*Entry{}
+	r.MoveSources = []*File{}
 }
 
 // ClearCopyResources clear resouces
 func (r *Register) ClearCopyResources() {
-	r.MoveSources = []*Entry{}
+	r.MoveSources = []*File{}
 }
 
 // Gui gui have some manager

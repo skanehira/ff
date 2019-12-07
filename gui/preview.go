@@ -31,7 +31,7 @@ func NewPreview(colorscheme string) *Preview {
 	return p
 }
 
-func (p *Preview) UpdateView(g *Gui, entry *Entry) {
+func (p *Preview) UpdateView(g *Gui, entry *File) {
 	if entry == nil {
 		return
 	}
@@ -68,7 +68,7 @@ func (p *Preview) dirEntry(path string) string {
 	return strings.Join(contents, "\n")
 }
 
-func (p *Preview) Highlight(entry *Entry) string {
+func (p *Preview) Highlight(entry *File) string {
 	// Determine lexer.
 	b, err := ioutil.ReadFile(entry.PathName)
 	if err != nil {

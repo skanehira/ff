@@ -28,11 +28,7 @@ func (t *Tree) UpdateView() {
 	panic("not implemented")
 }
 
-func (t *Tree) GetSelectEntry() *Entry {
-	panic("not implemented")
-}
-
-func (t *Tree) SetEntries(text string) []*Entry {
+func (t *Tree) GetSelectEntry() *File {
 	panic("not implemented")
 }
 
@@ -41,5 +37,9 @@ func (t *Tree) ChangeDir(gui *Gui, current string, target string) error {
 }
 
 func (t *Tree) Keybinding(gui *Gui) {
+	panic("not implemented")
+}
+
+func (t *Tree) SetEntries(path string) []*File {
 	panic("not implemented")
 }

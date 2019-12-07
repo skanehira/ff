@@ -1,7 +1,7 @@
 package gui
 
-// Entry file or dir info
-type Entry struct {
+// File file or dir info
+type File struct {
 	Name       string // file name
 	Path       string // file path
 	PathName   string // file's path and name
