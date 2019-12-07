@@ -9,9 +9,7 @@ import (
 	"log"
 	"os/exec"
 
-	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
-	"github.com/skanehira/ff/system"
 )
 
 var (
@@ -278,55 +276,4 @@ func (gui *Gui) Run() error {
 	}
 
 	return nil
-}
-
-func (gui *Gui) SearchBookmark() {
-	pageName := "search_bookmark"
-	if gui.Pages.HasPage(pageName) {
-		searchBookmarks.SetText(gui.Bookmark.GetSearchWord())
-		gui.Pages.SendToFront(pageName).ShowPage(pageName)
-	} else {
-		searchBookmarks = tview.NewInputField()
-		searchBookmarks.SetBorder(true).SetTitle("search bookmark").SetTitleAlign(tview.AlignLeft)
-		searchBookmarks.SetChangedFunc(func(text string) {
-			gui.Bookmark.SetSearchWord(text)
-			gui.Bookmark.UpdateView()
-		})
-		searchBookmarks.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
-			if key == tcell.KeyEnter {
-				gui.Pages.HidePage(pageName)
-				gui.FocusPanel(BookmarkPanel)
-			}
-
-		})
-
-		gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(searchBookmarks, 0, 3), true).ShowPage("bookmark").ShowPage("main")
-	}
-}
-
-func (gui *Gui) AddBookmark() {
-	gui.Form(map[string]string{"path": ""}, "add", "new bookmark", "new_bookmark", BookmarkPanel,
-		7, func(values map[string]string) error {
-			name := values["path"]
-			if name == "" {
-				return ErrNoPathName
-			}
-			name = os.ExpandEnv(name)
-
-			if !system.IsExist(name) {
-				return ErrNotExistPath
-			}
-
-			if err := gui.Bookmark.Add(name); err != nil {
-				return err
-			}
-
-			if err := gui.Bookmark.Update(); err != nil {
-				return err
-			}
-
-			return nil
-		})
-
-	gui.Pages.ShowPage("bookmark")
 }

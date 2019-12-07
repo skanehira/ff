@@ -28,7 +28,7 @@ func (gui *Gui) SetKeybindings() {
 	gui.CmdLineKeybinding()
 	gui.HelpKeybinding()
 	if gui.Config.Bookmark.Enable {
-		gui.BookmarkKeybinding()
+		gui.Bookmark.BookmarkKeybinding(gui)
 	}
 }
 
@@ -178,53 +178,6 @@ func (gui *Gui) CmdLineKeybinding() {
 			gui.CurrentPanel = CmdLinePanel
 			gui.Help.UpdateView(gui.CurrentPanel)
 			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
-		}
-
-		return event
-	})
-}
-
-func (gui *Gui) CloseBookmark() {
-	gui.Pages.RemovePage("bookmark").ShowPage("main")
-	gui.FocusPanel(FilesPanel)
-}
-
-func (gui *Gui) BookmarkKeybinding() {
-	gui.Bookmark.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Rune() {
-		case 'q':
-			gui.CloseBookmark()
-		case 'd':
-			entry := gui.Bookmark.GetSelectEntry()
-			if entry == nil {
-				return event
-			}
-			gui.Bookmark.Delete(entry.ID)
-			gui.Bookmark.Update()
-		case 'f', '/':
-			gui.SearchBookmark()
-		case 'a':
-			gui.AddBookmark()
-		case '?':
-			gui.Help.UpdateView(BookmarkPanel)
-			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("bookmark")
-		}
-
-		switch event.Key() {
-		case tcell.KeyF1:
-			gui.Help.UpdateView(BookmarkPanel)
-			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("bookmark")
-		case tcell.KeyCtrlG:
-			entry := gui.Bookmark.GetSelectEntry()
-			if entry == nil {
-				return event
-			}
-
-			if err := gui.ChangeDir(gui.InputPath.GetText(), entry.Name); err != nil {
-				gui.Message(err.Error(), BookmarkPanel)
-				return event
-			}
-			gui.CloseBookmark()
 		}
 
 		return event

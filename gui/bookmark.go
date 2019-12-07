@@ -211,3 +211,101 @@ func (b *Bookmarks) GetSelectEntry() *Bookmark {
 	}
 	return b.entries[row-1]
 }
+
+func (e *Bookmarks) SearchBookmark(gui *Gui) {
+	pageName := "search_bookmark"
+	if gui.Pages.HasPage(pageName) {
+		searchBookmarks.SetText(gui.Bookmark.GetSearchWord())
+		gui.Pages.SendToFront(pageName).ShowPage(pageName)
+	} else {
+		searchBookmarks = tview.NewInputField()
+		searchBookmarks.SetBorder(true).SetTitle("search bookmark").SetTitleAlign(tview.AlignLeft)
+		searchBookmarks.SetChangedFunc(func(text string) {
+			gui.Bookmark.SetSearchWord(text)
+			gui.Bookmark.UpdateView()
+		})
+		searchBookmarks.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
+			if key == tcell.KeyEnter {
+				gui.Pages.HidePage(pageName)
+				gui.FocusPanel(BookmarkPanel)
+			}
+
+		})
+
+		gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(searchBookmarks, 0, 3), true).ShowPage("bookmark").ShowPage("main")
+	}
+}
+
+func (b *Bookmarks) CloseBookmark(gui *Gui) {
+	gui.Pages.RemovePage("bookmark").ShowPage("main")
+	gui.FocusPanel(FilesPanel)
+}
+
+func (b *Bookmarks) BookmarkKeybinding(gui *Gui) {
+	gui.Bookmark.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Rune() {
+		case 'q':
+			b.CloseBookmark(gui)
+		case 'd':
+			entry := gui.Bookmark.GetSelectEntry()
+			if entry == nil {
+				return event
+			}
+			b.Delete(entry.ID)
+			b.Update()
+		case 'f', '/':
+			b.SearchBookmark(gui)
+		case 'a':
+			b.AddBookmark(gui)
+		case '?':
+			gui.Help.UpdateView(BookmarkPanel)
+			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("bookmark")
+		}
+
+		switch event.Key() {
+		case tcell.KeyF1:
+			gui.Help.UpdateView(BookmarkPanel)
+			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("bookmark")
+		case tcell.KeyCtrlG:
+			entry := gui.Bookmark.GetSelectEntry()
+			if entry == nil {
+				return event
+			}
+
+			if err := gui.ChangeDir(gui.InputPath.GetText(), entry.Name); err != nil {
+				gui.Message(err.Error(), BookmarkPanel)
+				return event
+			}
+			b.CloseBookmark(gui)
+		}
+
+		return event
+	})
+}
+
+func (b *Bookmarks) AddBookmark(gui *Gui) {
+	gui.Form(map[string]string{"path": ""}, "add", "new bookmark", "new_bookmark", BookmarkPanel,
+		7, func(values map[string]string) error {
+			name := values["path"]
+			if name == "" {
+				return ErrNoPathName
+			}
+			name = os.ExpandEnv(name)
+
+			if !system.IsExist(name) {
+				return ErrNotExistPath
+			}
+
+			if err := b.Add(name); err != nil {
+				return err
+			}
+
+			if err := b.Update(); err != nil {
+				return err
+			}
+
+			return nil
+		})
+
+	gui.Pages.ShowPage("bookmark")
+}
