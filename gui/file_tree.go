@@ -15,14 +15,16 @@ type Tree struct {
 	ignorecase bool
 	searchWord string
 	selectPos  map[string]string
+	expandInfo map[string]struct{}
 	originRoot *tview.TreeNode
 	*tview.TreeView
 }
 
 func NewTree() *Tree {
 	t := &Tree{
-		TreeView:  tview.NewTreeView(),
-		selectPos: make(map[string]string),
+		TreeView:   tview.NewTreeView(),
+		selectPos:  make(map[string]string),
+		expandInfo: make(map[string]struct{}),
 	}
 
 	t.SetBorder(true).SetTitle("files").SetTitleAlign(tview.AlignLeft)
@@ -114,7 +116,7 @@ func (t *Tree) ChangeDir(gui *Gui, current string, target string) error {
 	}
 	t.SetSelectPos(current)
 
-	root := tview.NewTreeNode(".").SetReference(&File{PathName: current})
+	root := tview.NewTreeNode(".").SetReference(&File{PathName: current}).SetSelectable(false)
 	t.SetRoot(root).SetCurrentNode(root)
 	originRoot := *root
 	t.originRoot = &originRoot
@@ -168,14 +170,19 @@ func (t *Tree) Keybinding(gui *Gui) {
 
 		case 'h':
 			t.GetCurrentNode().Collapse()
+			e := t.GetSelectEntry()
+			if e != nil {
+				delete(t.expandInfo, e.PathName)
+			}
 
 		case 'l':
 			node := t.GetCurrentNode()
-			node.Expand()
 			f := t.GetSelectEntry()
 			if f != nil && f.IsDir {
 				files := GetFiles(f.PathName, t.searchWord, t.ignorecase)
 				t.AddNode(node, files)
+				node.Expand()
+				t.expandInfo[f.PathName] = struct{}{}
 			}
 
 		case 'd':
@@ -201,8 +208,7 @@ func (t *Tree) Keybinding(gui *Gui) {
 					}
 				}
 
-				path := gui.InputPath.GetText()
-				t.SetEntries(path)
+				t.UpdateView()
 				return nil
 			})
 
@@ -212,13 +218,8 @@ func (t *Tree) Keybinding(gui *Gui) {
 				return event
 			}
 
-			//entry := t.GetSelectEntry()
-			//gui.Register.CopySource = entry
-
-			//row, _ := t.GetSelection()
-			//for i := 0; i < 5; i++ {
-			//	t.GetCell(row, i).SetTextColor(tcell.ColorYellow)
-			//}
+			entry := t.GetSelectEntry()
+			gui.Register.CopySource = entry
 
 		// paste entry
 		case 'p':
@@ -232,14 +233,24 @@ func (t *Tree) Keybinding(gui *Gui) {
 							return ErrNoNewName
 						}
 
-						target := filepath.Join(gui.InputPath.GetText(), name)
+						current := gui.InputPath.GetText()
+
+						e := t.GetSelectEntry()
+						if e != nil {
+							if e.IsDir {
+								current = e.PathName
+							} else {
+								current = filepath.Dir(e.PathName)
+							}
+						}
+						target := filepath.Join(current, name)
 						if err := system.Copy(source.PathName, target); err != nil {
 							log.Println(err)
 							return err
 						}
 
 						gui.Register.CopySource = nil
-						t.SetEntries(gui.InputPath.GetText())
+						t.UpdateView()
 						return nil
 					})
 			}
@@ -265,13 +276,23 @@ func (t *Tree) Keybinding(gui *Gui) {
 						return ErrNoDirName
 					}
 
-					target := filepath.Join(gui.InputPath.GetText(), name)
+					current := gui.InputPath.GetText()
+
+					e := t.GetSelectEntry()
+					if e != nil {
+						if e.IsDir {
+							current = e.PathName
+						} else {
+							current = filepath.Dir(e.PathName)
+						}
+					}
+					target := filepath.Join(current, name)
 					if err := system.NewDir(target); err != nil {
 						log.Println(err)
 						return err
 					}
 
-					t.SetEntries(gui.InputPath.GetText())
+					t.UpdateView()
 					return nil
 				})
 		case 'r':
@@ -289,12 +310,21 @@ func (t *Tree) Keybinding(gui *Gui) {
 
 					current := gui.InputPath.GetText()
 
+					e := t.GetSelectEntry()
+					if e != nil {
+						if e.IsDir {
+							current = e.PathName
+						} else {
+							current = filepath.Dir(e.PathName)
+						}
+					}
 					target := filepath.Join(current, name)
+
 					if err := system.Rename(entry.PathName, target); err != nil {
 						return err
 					}
 
-					t.SetEntries(gui.InputPath.GetText())
+					t.UpdateView()
 					return nil
 				})
 
@@ -306,13 +336,24 @@ func (t *Tree) Keybinding(gui *Gui) {
 						return ErrNoFileOrDirName
 					}
 
-					target := filepath.Join(gui.InputPath.GetText(), name)
+					current := gui.InputPath.GetText()
+
+					e := t.GetSelectEntry()
+					if e != nil {
+						if e.IsDir {
+							current = e.PathName
+						} else {
+							current = filepath.Dir(e.PathName)
+						}
+					}
+
+					target := filepath.Join(current, name)
 					if err := system.NewFile(target); err != nil {
 						log.Println(err)
 						return err
 					}
 
-					t.SetEntries(gui.InputPath.GetText())
+					t.UpdateView()
 					return nil
 				})
 		case 'q':
@@ -401,6 +442,12 @@ func (t *Tree) AddNode(parent *tview.TreeNode, files []*File) {
 		n := tview.NewTreeNode(f.Name).SetReference(f)
 		if f.IsDir {
 			n.SetColor(tcell.ColorDarkCyan)
+		}
+		if _, ok := t.expandInfo[f.PathName]; ok {
+			files := GetFiles(f.PathName, t.searchWord, t.ignorecase)
+			if len(files) != 0 {
+				t.AddNode(n, files)
+			}
 		}
 		nodes[i] = n
 	}
