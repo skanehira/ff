@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -25,8 +24,9 @@ var (
 func (gui *Gui) SetKeybindings() {
 	gui.FileBrowser.Keybinding(gui)
 	gui.InputPathKeybinding()
-	gui.CmdLineKeybinding()
-	gui.HelpKeybinding()
+	gui.CmdLine.Keybinding(gui)
+	gui.Help.Keybinding(gui)
+
 	if gui.Config.Bookmark.Enable {
 		gui.Bookmark.BookmarkKeybinding(gui)
 	}
@@ -133,63 +133,6 @@ func (gui *Gui) InputPathKeybinding() {
 			gui.Help.UpdateView(gui.CurrentPanel)
 			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
 
-		}
-		return event
-	})
-}
-
-func (gui *Gui) CmdLineKeybinding() {
-	cmdline := gui.CmdLine
-
-	cmdline.SetDoneFunc(func(key tcell.Key) {
-		text := cmdline.GetText()
-		if text == "" {
-			return
-		}
-
-		cmdText := strings.Split(text, " ")
-
-		// expand environments
-		for i, c := range cmdText[1:] {
-			cmdText[i+1] = os.ExpandEnv(c)
-		}
-
-		cmd := exec.Command(cmdText[0], cmdText[1:]...)
-
-		buf := bytes.Buffer{}
-		cmd.Stderr = &buf
-		cmd.Stdout = &buf
-		if err := cmd.Run(); err == nil {
-			cmdline.SetText("")
-		}
-
-		result := strings.TrimRight(buf.String(), "\n")
-		if result != "" {
-			gui.Message(result, CmdLinePanel)
-		}
-
-		gui.FileBrowser.SetEntries(gui.InputPath.GetText())
-	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyTab, tcell.KeyEsc:
-			gui.App.SetFocus(gui.FileBrowser)
-			return event
-		case tcell.KeyF1:
-			gui.CurrentPanel = CmdLinePanel
-			gui.Help.UpdateView(gui.CurrentPanel)
-			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
-		}
-
-		return event
-	})
-}
-
-func (gui *Gui) HelpKeybinding() {
-	gui.Help.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Rune() {
-		case 'q':
-			gui.Pages.RemovePage("help")
-			gui.FocusPanel(gui.CurrentPanel)
 		}
 		return event
 	})
