@@ -102,7 +102,11 @@ func (t *Tree) UpdateView() {
 }
 
 func (t *Tree) GetSelectEntry() *File {
-	f, ok := t.GetCurrentNode().GetReference().(*File)
+	n := t.GetCurrentNode()
+	if n == nil {
+		return nil
+	}
+	f, ok := n.GetReference().(*File)
 	if !ok {
 		return nil
 	}
@@ -186,10 +190,6 @@ func (t *Tree) Keybinding(gui *Gui) {
 			}
 
 		case 'd':
-			if len(t.files) == 0 {
-				return event
-			}
-
 			gui.Confirm("do you want to remove this?", "yes", FilesPanel, func() error {
 				entry := t.GetSelectEntry()
 				if entry == nil {
@@ -214,12 +214,11 @@ func (t *Tree) Keybinding(gui *Gui) {
 
 		// copy entry
 		case 'y':
-			if len(t.files) == 0 {
-				return event
-			}
-
 			entry := t.GetSelectEntry()
-			gui.Register.CopySource = entry
+			if entry != nil {
+				gui.Register.CopySource = entry
+				t.GetCurrentNode().SetColor(tcell.ColorYellow)
+			}
 
 		// paste entry
 		case 'p':
