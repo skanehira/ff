@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell"
-	"github.com/skanehira/ff/system"
 )
 
 var (
@@ -24,293 +23,22 @@ var (
 )
 
 func (gui *Gui) SetKeybindings() {
+	gui.FileBrowser.Keybinding(gui)
 	gui.InputPathKeybinding()
-	gui.EntryManagerKeybinding()
 	gui.CmdLineKeybinding()
-
 	gui.HelpKeybinding()
-
 	if gui.Config.Bookmark.Enable {
 		gui.BookmarkKeybinding()
 	}
-}
-
-func (gui *Gui) EntryManagerKeybinding() {
-	gui.EntryManager.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if gui.Config.Preview.Enable {
-			switch event.Key() {
-			case tcell.KeyCtrlJ:
-				gui.Preview.ScrollDown()
-			case tcell.KeyCtrlK:
-				gui.Preview.ScrollUp()
-			}
-		}
-
-		switch event.Key() {
-		case tcell.KeyTab:
-			gui.App.SetFocus(gui.InputPath)
-		case tcell.KeyF1:
-			gui.Help.UpdateView(FilesPanel)
-			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
-		}
-
-		switch event.Rune() {
-		case '?':
-			gui.Help.UpdateView(FilesPanel)
-			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
-
-		case 'h':
-			current := gui.InputPath.GetText()
-			parent := filepath.Dir(current)
-
-			if parent != "" {
-				if err := gui.ChangeDir(current, parent); err != nil {
-					gui.Message(err.Error(), FilesPanel)
-				}
-			}
-
-		// go to selected dir
-		case 'l':
-			entry := gui.EntryManager.GetSelectEntry()
-
-			if entry != nil && entry.IsDir {
-				current := gui.InputPath.GetText()
-				if err := gui.ChangeDir(current, entry.PathName); err != nil {
-					gui.Message(err.Error(), FilesPanel)
-				}
-			}
-		case 'd':
-			if !hasEntry(gui) {
-				return event
-			}
-
-			gui.Confirm("do you want to remove this?", "yes", FilesPanel, func() error {
-				entry := gui.EntryManager.GetSelectEntry()
-				if entry == nil {
-					return nil
-				}
-
-				if entry.IsDir {
-					if err := system.RemoveDirAll(entry.PathName); err != nil {
-						log.Println(err)
-						return err
-					}
-				} else {
-					if err := system.RemoveFile(entry.PathName); err != nil {
-						log.Println(err)
-						return err
-					}
-				}
-
-				path := gui.InputPath.GetText()
-				gui.EntryManager.SetEntries(path)
-				return nil
-			})
-
-		// copy entry
-		case 'y':
-			if !hasEntry(gui) {
-				return event
-			}
-
-			m := gui.EntryManager
-			m.UpdateColor()
-			entry := m.GetSelectEntry()
-			gui.Register.CopySource = entry
-
-			row, _ := m.GetSelection()
-			for i := 0; i < 5; i++ {
-				m.GetCell(row, i).SetTextColor(tcell.ColorYellow)
-			}
-
-		// paste entry
-		case 'p':
-			if gui.Register.CopySource != nil {
-				source := gui.Register.CopySource
-
-				gui.Form(map[string]string{"name": source.Name}, "paste", "new name", "new_name", FilesPanel,
-					7, func(values map[string]string) error {
-						name := values["name"]
-						if name == "" {
-							return ErrNoNewName
-						}
-
-						target := filepath.Join(gui.InputPath.GetText(), name)
-						if err := system.Copy(source.PathName, target); err != nil {
-							log.Println(err)
-							return err
-						}
-
-						gui.Register.CopySource = nil
-						gui.EntryManager.SetEntries(gui.InputPath.GetText())
-						return nil
-					})
-			}
-
-		// edit file with $EDITOR
-		case 'e':
-			entry := gui.EntryManager.GetSelectEntry()
-			if entry == nil {
-				log.Println("cannot get entry")
-				return event
-			}
-
-			if err := gui.EditFile(entry.PathName); err != nil {
-				gui.Message(err.Error(), FilesPanel)
-			}
-
-		case 'm':
-			gui.Form(map[string]string{"name": ""}, "create", "new direcotry",
-				"create_directory", FilesPanel,
-				7, func(values map[string]string) error {
-					name := values["name"]
-					if name == "" {
-						return ErrNoDirName
-					}
-
-					target := filepath.Join(gui.InputPath.GetText(), name)
-					if err := system.NewDir(target); err != nil {
-						log.Println(err)
-						return err
-					}
-
-					gui.EntryManager.SetEntries(gui.InputPath.GetText())
-					return nil
-				})
-		case 'r':
-			entry := gui.EntryManager.GetSelectEntry()
-			if entry == nil {
-				return event
-			}
-
-			gui.Form(map[string]string{"new name": entry.Name}, "rename", "new name", "rename", FilesPanel,
-				7, func(values map[string]string) error {
-					name := values["new name"]
-					if name == "" {
-						return ErrNoFileName
-					}
-
-					current := gui.InputPath.GetText()
-
-					target := filepath.Join(current, name)
-					if err := system.Rename(entry.PathName, target); err != nil {
-						return err
-					}
-
-					gui.EntryManager.SetEntries(gui.InputPath.GetText())
-					return nil
-				})
-
-		case 'n':
-			gui.Form(map[string]string{"name": ""}, "create", "new file", "create_file", FilesPanel,
-				7, func(values map[string]string) error {
-					name := values["name"]
-					if name == "" {
-						return ErrNoFileOrDirName
-					}
-
-					target := filepath.Join(gui.InputPath.GetText(), name)
-					if err := system.NewFile(target); err != nil {
-						log.Println(err)
-						return err
-					}
-
-					gui.EntryManager.SetEntries(gui.InputPath.GetText())
-					return nil
-				})
-		case 'q':
-			gui.Stop()
-
-		case 'o':
-			entry := gui.EntryManager.GetSelectEntry()
-			if entry == nil {
-				return event
-			}
-			if err := system.Open(entry.PathName); err != nil {
-				gui.Message(err.Error(), FilesPanel)
-			}
-
-		case 'f', '/':
-			gui.Search()
-
-		case ':', 'c':
-			gui.FocusPanel(CmdLinePanel)
-
-		case '.':
-			if err := gui.EditFile(gui.Config.ConfigFile); err != nil {
-				gui.Message(err.Error(), FilesPanel)
-			}
-
-		case 'b':
-			if gui.Config.Bookmark.Enable {
-				entry := gui.EntryManager.GetSelectEntry()
-				if entry != nil && entry.IsDir {
-					if err := gui.Bookmark.Add(entry.PathName); err != nil {
-						gui.Message(err.Error(), FilesPanel)
-					}
-				}
-			}
-
-		case 'B':
-			if gui.Config.Bookmark.Enable {
-				if err := gui.Bookmark.Update(); err != nil {
-					gui.Message(err.Error(), FilesPanel)
-					return event
-				}
-				gui.CurrentPanel = BookmarkPanel
-				gui.Pages.AddAndSwitchToPage("bookmark", gui.Bookmark, true).ShowPage("main")
-			}
-		}
-
-		return event
-	})
-
-	gui.EntryManager.SetSelectionChangedFunc(func(row, col int) {
-		if row > 0 {
-			if gui.Config.Preview.Enable {
-				entries := gui.EntryManager.Entries()
-				if len(entries) > 1 {
-					gui.Preview.UpdateView(gui, entries[row-1])
-				}
-			}
-		}
-	})
 }
 
 func (gui *Gui) ChangeDir(current, target string) error {
 	if gui.Config.Bookmark.Enable {
 		gui.Bookmark.SetSearchWord("")
 	}
-	gui.EntryManager.SetSearchWord("")
-
-	// save select position
-	gui.EntryManager.SetSelectPos(current)
-
-	// update files
 	gui.InputPath.SetText(target)
-	gui.EntryManager.SetEntries(target)
 
-	// if current postion is over than bottom entry position
-	row, _ := gui.EntryManager.GetSelection()
-	count := gui.EntryManager.GetRowCount()
-	if row > count {
-		gui.EntryManager.Select(count-1, 0)
-	}
-
-	if gui.Config.Preview.Enable {
-		entry := gui.EntryManager.GetSelectEntry()
-		gui.Preview.UpdateView(gui, entry)
-	}
-
-	if err := os.Chdir(target); err != nil {
-		log.Println(err)
-		return err
-	}
-
-	// restore select position
-	gui.EntryManager.RestorePos(target)
-
-	return nil
+	return gui.FileBrowser.ChangeDir(gui, current, target)
 }
 
 func (gui *Gui) EditFile(file string) error {
@@ -333,7 +61,7 @@ func (gui *Gui) EditFile(file string) error {
 	})
 
 	if gui.Config.Preview.Enable {
-		entry := gui.EntryManager.GetSelectEntry()
+		entry := gui.FileBrowser.GetSelectEntry()
 		gui.Preview.UpdateView(gui, entry)
 	}
 
@@ -440,11 +168,11 @@ func (gui *Gui) CmdLineKeybinding() {
 			gui.Message(result, CmdLinePanel)
 		}
 
-		gui.EntryManager.SetEntries(gui.InputPath.GetText())
+		gui.FileBrowser.SetEntries(gui.InputPath.GetText())
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyTab, tcell.KeyEsc:
-			gui.App.SetFocus(gui.EntryManager)
+			gui.App.SetFocus(gui.FileBrowser)
 			return event
 		case tcell.KeyF1:
 			gui.CurrentPanel = CmdLinePanel

@@ -52,11 +52,10 @@ type Gui struct {
 	InputPath      *tview.InputField
 	Register       *Register
 	HistoryManager *HistoryManager
-	EntryManager   *EntryManager
+	FileBrowser    FileBrowser
 	Preview        *Preview
 	CmdLine        *CmdLine
 	Bookmark       *Bookmarks
-	Tree           *Tree
 	Help           *Help
 	App            *tview.Application
 	Pages          *tview.Pages
@@ -64,19 +63,11 @@ type Gui struct {
 	ctxCancel      context.CancelFunc
 }
 
-func hasEntry(gui *Gui) bool {
-	if len(gui.EntryManager.Entries()) != 0 {
-		return true
-	}
-	return false
-}
-
 // New create new gui
 func New(config Config) *Gui {
 	gui := &Gui{
 		Config:         config,
 		InputPath:      tview.NewInputField().SetLabel("path").SetLabelWidth(5),
-		EntryManager:   NewEntryManager(config.IgnoreCase),
 		HistoryManager: NewHistoryManager(),
 		CmdLine:        NewCmdLine(),
 		Help:           NewHelp(),
@@ -88,6 +79,12 @@ func New(config Config) *Gui {
 
 	if gui.Config.Preview.Enable {
 		gui.Preview = NewPreview(config.Preview.Colorscheme)
+	}
+
+	if gui.Config.EnableTree {
+		gui.FileBrowser = NewTree()
+	} else {
+		gui.FileBrowser = NewEntryManager(config.IgnoreCase)
 	}
 
 	if gui.Config.Bookmark.Enable {
@@ -169,7 +166,7 @@ func (gui *Gui) FocusPanel(panel Panel) {
 	case PathPanel:
 		p = gui.InputPath
 	case FilesPanel:
-		p = gui.EntryManager
+		p = gui.FileBrowser
 	case CmdLinePanel:
 		p = gui.CmdLine
 	case BookmarkPanel:
@@ -239,12 +236,12 @@ func (gui *Gui) Run() error {
 
 	if gui.Config.Preview.Enable {
 		grid.SetColumns(0, 0).
-			AddItem(gui.EntryManager, 1, 0, 1, 1, 0, 0, true).
+			AddItem(gui.FileBrowser, 1, 0, 1, 1, 0, 0, true).
 			AddItem(gui.Preview, 1, 1, 1, 1, 0, 0, true)
 
-		gui.Preview.UpdateView(gui, gui.EntryManager.GetSelectEntry())
+		gui.Preview.UpdateView(gui, gui.FileBrowser.GetSelectEntry())
 	} else {
-		grid.AddItem(gui.EntryManager, 1, 0, 1, 2, 0, 0, true)
+		grid.AddItem(gui.FileBrowser, 1, 0, 1, 2, 0, 0, true)
 	}
 
 	gui.CurrentPanel = FilesPanel
@@ -266,7 +263,7 @@ func (gui *Gui) Run() error {
 			select {
 			case <-t.C:
 				gui.App.QueueUpdateDraw(func() {
-					gui.EntryManager.UpdateView()
+					gui.FileBrowser.UpdateView()
 				})
 			case <-ctx.Done():
 				return
@@ -275,41 +272,12 @@ func (gui *Gui) Run() error {
 
 	}(ctx)
 
-	if err := gui.App.SetRoot(gui.Pages, true).SetFocus(gui.EntryManager).Run(); err != nil {
+	if err := gui.App.SetRoot(gui.Pages, true).SetFocus(gui.FileBrowser).Run(); err != nil {
 		gui.Stop()
 		return err
 	}
 
 	return nil
-}
-
-func (gui *Gui) Search() {
-	pageName := "search"
-	if gui.Pages.HasPage(pageName) {
-		searchFiles.SetText(gui.EntryManager.GetSearchWord())
-		gui.Pages.ShowPage(pageName)
-	} else {
-		searchFiles = tview.NewInputField()
-		searchFiles.SetBorder(true).SetTitle("search").SetTitleAlign(tview.AlignLeft)
-		searchFiles.SetChangedFunc(func(text string) {
-			gui.EntryManager.SetSearchWord(text)
-			current := gui.InputPath.GetText()
-			gui.EntryManager.SetEntries(current)
-
-			if gui.Config.Preview.Enable {
-				gui.Preview.UpdateView(gui, gui.EntryManager.GetSelectEntry())
-			}
-		})
-		searchFiles.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
-			if key == tcell.KeyEnter {
-				gui.Pages.HidePage(pageName)
-				gui.FocusPanel(FilesPanel)
-			}
-
-		})
-
-		gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(searchFiles, 0, 3), true).ShowPage("main")
-	}
 }
 
 func (gui *Gui) SearchBookmark() {
