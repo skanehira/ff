@@ -72,6 +72,8 @@ func (t *Tree) ChangeDir(gui *Gui, current string, target string) error {
 		log.Println(err)
 		return err
 	}
+
+	gui.InputPath.SetText(target)
 	return nil
 }
 
@@ -99,8 +101,19 @@ func (t *Tree) Keybinding(gui *Gui) {
 			gui.Help.UpdateView(FilesPanel)
 			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
 
+		case 'H':
+			current := gui.InputPath.GetText()
+			t.ChangeDir(gui, current, filepath.Dir(current))
+
+		case 'L':
+			f := t.GetSelectEntry()
+			if f != nil && f.IsDir {
+				t.ChangeDir(gui, gui.InputPath.GetText(), f.PathName)
+			}
+
 		case 'h':
 			t.GetCurrentNode().Collapse()
+
 		case 'l':
 			node := t.GetCurrentNode()
 			node.Expand()
@@ -299,7 +312,10 @@ func (t *Tree) Keybinding(gui *Gui) {
 			if !ok {
 				return
 			}
-			gui.Preview.UpdateView(gui, file)
+
+			if gui.Config.Preview.Enable {
+				gui.Preview.UpdateView(gui, file)
+			}
 		}
 	})
 }
