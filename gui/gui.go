@@ -82,7 +82,7 @@ func New(config Config) *Gui {
 	if gui.Config.EnableTree {
 		gui.FileBrowser = NewTree()
 	} else {
-		gui.FileBrowser = NewEntryManager(config.IgnoreCase)
+		gui.FileBrowser = NewFileTable(config.IgnoreCase)
 	}
 
 	if gui.Config.Bookmark.Enable {
