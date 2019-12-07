@@ -1,13 +1,8 @@
 package gui
 
 import (
-	"io/ioutil"
 	"os"
-	"os/user"
 	"path/filepath"
-	"strconv"
-	"strings"
-	"syscall"
 
 	"log"
 
@@ -15,7 +10,6 @@ import (
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 	"github.com/skanehira/ff/system"
-	"gopkg.in/djherbis/times.v1"
 )
 
 var (
@@ -30,7 +24,7 @@ type selectPos struct {
 // FileTable file list
 type FileTable struct {
 	enableIgnorecase bool
-	entries          []*File
+	files            []*File
 	selectPos        map[string]selectPos
 	searchWord       string
 	*tview.Table
@@ -51,7 +45,7 @@ func NewFileTable(enableIgnorecase bool) *FileTable {
 
 // Entries get entries
 func (e *FileTable) Entries() []*File {
-	return e.entries
+	return e.files
 }
 
 func (e *FileTable) SetSearchWord(word string) {
@@ -80,88 +74,17 @@ func (e *FileTable) RestorePos(path string) {
 
 // SetEntries set entries
 func (e *FileTable) SetEntries(path string) []*File {
-	var entries []*File
-
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		log.Printf("%s: %s\n", ErrReadDir, err)
-		return nil
-	}
+	files := GetFiles(path, e.searchWord, e.enableIgnorecase)
 
 	if len(files) == 0 {
-		e.entries = entries
+		e.files = nil
 		e.SetColumns()
 		return nil
 	}
 
-	var access, change, create, perm, owner, group string
-
-	for _, file := range files {
-		var name, word string
-		if e.enableIgnorecase {
-			name = strings.ToLower(file.Name())
-			word = strings.ToLower(e.searchWord)
-		} else {
-			name = file.Name()
-			word = e.searchWord
-		}
-		if strings.Index(name, word) == -1 {
-			continue
-		}
-		// get file times
-		pathName := filepath.Join(path, file.Name())
-		t, err := times.Stat(pathName)
-		if err != nil {
-			log.Printf("%s: %s\n", ErrGetTime, err)
-			continue
-		}
-
-		access = t.AccessTime().Format(dateFmt)
-		change = file.ModTime().Format(dateFmt)
-		if t.HasBirthTime() {
-			create = t.BirthTime().Format(dateFmt)
-		}
-
-		perm = file.Mode().String()
-
-		// get file permission, owner, group
-		if stat, ok := file.Sys().(*syscall.Stat_t); ok {
-			uid := strconv.Itoa(int(stat.Uid))
-			u, err := user.LookupId(uid)
-			if err != nil {
-				owner = uid
-			} else {
-				owner = u.Username
-			}
-			gid := strconv.Itoa(int(stat.Gid))
-			g, err := user.LookupGroupId(gid)
-			if err != nil {
-				group = gid
-			} else {
-				group = g.Name
-			}
-		}
-
-		// create entriey
-		entries = append(entries, &File{
-			Name:       file.Name(),
-			Access:     access,
-			Create:     create,
-			Change:     change,
-			Size:       file.Size(),
-			Permission: perm,
-			IsDir:      file.IsDir(),
-			Owner:      owner,
-			Group:      group,
-			PathName:   pathName,
-			Path:       path,
-			Viewable:   true,
-		})
-	}
-
-	e.entries = entries
+	e.files = files
 	e.SetColumns()
-	return entries
+	return files
 }
 
 func (e *FileTable) RefreshView() {
@@ -199,7 +122,7 @@ func (e *FileTable) SetColumns() {
 	table := e.Clear()
 	e.SetHeader()
 	var i int
-	for _, entry := range e.entries {
+	for _, entry := range e.files {
 		size := humanize.Bytes(uint64(entry.Size))
 		table.SetCell(i+1, 0, tview.NewTableCell(entry.Name))
 		table.SetCell(i+1, 1, tview.NewTableCell(size))
@@ -215,17 +138,17 @@ func (e *FileTable) SetColumns() {
 // GetSelectEntry get selected entry
 func (e *FileTable) GetSelectEntry() *File {
 	row, _ := e.GetSelection()
-	if len(e.entries) == 0 {
+	if len(e.files) == 0 {
 		return nil
 	}
 	if row < 1 {
 		return nil
 	}
 
-	if row > len(e.entries) {
+	if row > len(e.files) {
 		return nil
 	}
-	return e.entries[row-1]
+	return e.files[row-1]
 }
 
 func (e *FileTable) UpdateColor() {
@@ -234,7 +157,7 @@ func (e *FileTable) UpdateColor() {
 	e.GetSelection()
 	for i := 1; i < rowNum; i++ {
 		color := tcell.ColorWhite
-		if e.Entries()[i-1].IsDir {
+		if e.files[i-1].IsDir {
 			color = tcell.ColorDarkCyan
 		}
 
@@ -332,7 +255,7 @@ func (e *FileTable) Keybinding(gui *Gui) {
 				}
 			}
 		case 'd':
-			if len(e.Entries()) == 0 {
+			if len(e.files) == 0 {
 				return event
 			}
 
@@ -361,7 +284,7 @@ func (e *FileTable) Keybinding(gui *Gui) {
 
 		// copy entry
 		case 'y':
-			if len(e.Entries()) == 0 {
+			if len(e.files) == 0 {
 				return event
 			}
 
@@ -519,9 +442,8 @@ func (e *FileTable) Keybinding(gui *Gui) {
 	e.SetSelectionChangedFunc(func(row, col int) {
 		if row > 0 {
 			if gui.Config.Preview.Enable {
-				entries := e.Entries()
-				if len(entries) > 1 {
-					gui.Preview.UpdateView(gui, entries[row-1])
+				if len(e.files) > 1 {
+					gui.Preview.UpdateView(gui, e.files[row-1])
 				}
 			}
 		}
