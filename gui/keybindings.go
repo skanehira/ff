@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell"
+	"github.com/skanehira/ff/system"
 )
 
 var (
@@ -20,6 +21,76 @@ var (
 	ErrNoFileOrDir     = errors.New("no file or directory")
 	ErrNoNewName       = errors.New("no new name")
 )
+
+func (gui *Gui) commonFileBrowserKeybinding(event *tcell.EventKey) {
+	if gui.Config.Preview.Enable {
+		switch event.Key() {
+		case tcell.KeyCtrlJ:
+			gui.Preview.ScrollDown()
+		case tcell.KeyCtrlK:
+			gui.Preview.ScrollUp()
+		}
+	}
+
+	switch event.Key() {
+	case tcell.KeyTab:
+		gui.App.SetFocus(gui.InputPath)
+	}
+
+	switch event.Rune() {
+	case 'e':
+		entry := gui.FileBrowser.GetSelectEntry()
+		if entry == nil {
+			log.Println("cannot get entry")
+			return
+		}
+
+		if err := gui.EditFile(entry.PathName); err != nil {
+			gui.Message(err.Error(), FilesPanel)
+		}
+
+	case 'q':
+		gui.Stop()
+
+	case 'o':
+		entry := gui.FileBrowser.GetSelectEntry()
+		if entry == nil {
+			return
+		}
+		if err := system.Open(entry.PathName); err != nil {
+			gui.Message(err.Error(), FilesPanel)
+		}
+
+	case ':', 'c':
+		gui.FocusPanel(CmdLinePanel)
+
+	case '.':
+		if err := gui.EditFile(gui.Config.ConfigFile); err != nil {
+			gui.Message(err.Error(), FilesPanel)
+		}
+
+	case 'b':
+		if gui.Config.Bookmark.Enable {
+			entry := gui.FileBrowser.GetSelectEntry()
+			if entry != nil && entry.IsDir {
+				if err := gui.Bookmark.Add(entry.PathName); err != nil {
+					gui.Message(err.Error(), FilesPanel)
+				}
+			}
+		}
+
+	case 'B':
+		if gui.Config.Bookmark.Enable {
+			if err := gui.Bookmark.Update(); err != nil {
+				gui.Message(err.Error(), FilesPanel)
+				return
+			}
+			gui.CurrentPanel = BookmarkPanel
+			gui.Pages.AddAndSwitchToPage("bookmark", gui.Bookmark, true).ShowPage("main")
+		}
+
+	}
+}
 
 func (gui *Gui) SetKeybindings() {
 	gui.FileBrowser.Keybinding(gui)

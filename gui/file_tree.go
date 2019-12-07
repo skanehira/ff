@@ -140,18 +140,9 @@ func (t *Tree) ChangeDir(gui *Gui, current string, target string) error {
 
 func (t *Tree) Keybinding(gui *Gui) {
 	t.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if gui.Config.Preview.Enable {
-			switch event.Key() {
-			case tcell.KeyCtrlJ:
-				gui.Preview.ScrollDown()
-			case tcell.KeyCtrlK:
-				gui.Preview.ScrollUp()
-			}
-		}
+		gui.commonFileBrowserKeybinding(event)
 
 		switch event.Key() {
-		case tcell.KeyTab:
-			gui.App.SetFocus(gui.InputPath)
 		case tcell.KeyF1:
 			gui.Help.UpdateView(FilesPanel)
 			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
@@ -254,18 +245,6 @@ func (t *Tree) Keybinding(gui *Gui) {
 					})
 			}
 
-		// edit file with $EDITOR
-		case 'e':
-			entry := t.GetSelectEntry()
-			if entry == nil {
-				log.Println("cannot get entry")
-				return event
-			}
-
-			if err := gui.EditFile(entry.PathName); err != nil {
-				gui.Message(err.Error(), FilesPanel)
-			}
-
 		case 'm':
 			gui.Form(map[string]string{"name": ""}, "create", "new direcotry",
 				"create_directory", FilesPanel,
@@ -294,6 +273,7 @@ func (t *Tree) Keybinding(gui *Gui) {
 					t.UpdateView()
 					return nil
 				})
+
 		case 'r':
 			entry := t.GetSelectEntry()
 			if entry == nil {
@@ -351,48 +331,9 @@ func (t *Tree) Keybinding(gui *Gui) {
 					t.UpdateView()
 					return nil
 				})
-		case 'q':
-			gui.Stop()
-
-		case 'o':
-			entry := t.GetSelectEntry()
-			if entry == nil {
-				return event
-			}
-			if err := system.Open(entry.PathName); err != nil {
-				gui.Message(err.Error(), FilesPanel)
-			}
-
 		case 'f', '/':
 			t.SearchFiles(gui)
 
-		case ':', 'c':
-			gui.FocusPanel(CmdLinePanel)
-
-		case '.':
-			if err := gui.EditFile(gui.Config.ConfigFile); err != nil {
-				gui.Message(err.Error(), FilesPanel)
-			}
-
-		case 'b':
-			if gui.Config.Bookmark.Enable {
-				entry := t.GetSelectEntry()
-				if entry != nil && entry.IsDir {
-					if err := gui.Bookmark.Add(entry.PathName); err != nil {
-						gui.Message(err.Error(), FilesPanel)
-					}
-				}
-			}
-
-		case 'B':
-			if gui.Config.Bookmark.Enable {
-				if err := gui.Bookmark.Update(); err != nil {
-					gui.Message(err.Error(), FilesPanel)
-					return event
-				}
-				gui.CurrentPanel = BookmarkPanel
-				gui.Pages.AddAndSwitchToPage("bookmark", gui.Bookmark, true).ShowPage("main")
-			}
 		}
 
 		return event
