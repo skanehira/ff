@@ -311,11 +311,7 @@ func (t *Tree) Keybinding(gui *Gui) {
 
 					e := t.GetSelectEntry()
 					if e != nil {
-						if e.IsDir {
-							current = e.PathName
-						} else {
-							current = filepath.Dir(e.PathName)
-						}
+						current = filepath.Dir(e.PathName)
 					}
 					target := filepath.Join(current, name)
 
