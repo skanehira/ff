@@ -14,13 +14,15 @@ type Tree struct {
 	files      []*File
 	ignorecase bool
 	searchWord string
+	selectPos  map[string]string
 	originRoot *tview.TreeNode
 	*tview.TreeView
 }
 
 func NewTree() *Tree {
 	t := &Tree{
-		TreeView: tview.NewTreeView(),
+		TreeView:  tview.NewTreeView(),
+		selectPos: make(map[string]string),
 	}
 
 	t.SetBorder(true).SetTitle("files").SetTitleAlign(tview.AlignLeft)
@@ -39,15 +41,62 @@ func (t *Tree) SearchFiles(gui *Gui) {
 	// file search
 }
 
-func (t *Tree) UpdateView() {
-	// TODO restore cursor position
-	//current, err := os.Getwd()
-	//if err != nil {
-	//	log.Println(err)
-	//	return
-	//}
+func (t *Tree) SetSelectPos(path string) {
+	n := t.GetCurrentNode()
+	if n != nil {
+		f, ok := n.GetReference().(*File)
+		if ok {
+			t.selectPos[path] = f.PathName
+		}
+	}
+}
 
-	//t.SetEntries(current)
+func (t *Tree) RestorePos(path string) {
+	oldpath, ok := t.selectPos[path]
+	if !ok {
+		return
+	}
+
+	currentlyNode := t.GetCurrentlyNode(oldpath, t.GetRoot())
+	if currentlyNode != nil {
+		t.SetCurrentNode(currentlyNode)
+	}
+
+	return
+}
+
+func (t *Tree) GetCurrentlyNode(oldpath string, target *tview.TreeNode) *tview.TreeNode {
+	for _, node := range target.GetChildren() {
+		f, ok := node.GetReference().(*File)
+		if !ok {
+			continue
+		}
+
+		if oldpath == f.PathName {
+			return node
+		}
+
+		if len(node.GetChildren()) > 0 {
+			n := t.GetCurrentlyNode(oldpath, node)
+			if n != nil {
+				return n
+			}
+		}
+	}
+
+	return nil
+}
+
+func (t *Tree) UpdateView() {
+	current, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	t.SetSelectPos(current)
+	t.SetEntries(current)
+	t.RestorePos(current)
 }
 
 func (t *Tree) GetSelectEntry() *File {
@@ -60,8 +109,9 @@ func (t *Tree) GetSelectEntry() *File {
 
 func (t *Tree) ChangeDir(gui *Gui, current string, target string) error {
 	t.searchWord = ""
+	t.SetSelectPos(current)
 
-	root := tview.NewTreeNode(".")
+	root := tview.NewTreeNode(".").SetReference(&File{PathName: current})
 	t.SetRoot(root).SetCurrentNode(root)
 	originRoot := *root
 	t.originRoot = &originRoot
@@ -72,6 +122,8 @@ func (t *Tree) ChangeDir(gui *Gui, current string, target string) error {
 		log.Println(err)
 		return err
 	}
+
+	t.RestorePos(target)
 
 	gui.InputPath.SetText(target)
 	return nil
