@@ -32,15 +32,6 @@ func (gui *Gui) SetKeybindings() {
 	}
 }
 
-func (gui *Gui) ChangeDir(current, target string) error {
-	if gui.Config.Bookmark.Enable {
-		gui.Bookmark.SetSearchWord("")
-	}
-	gui.InputPath.SetText(target)
-
-	return gui.FileBrowser.ChangeDir(gui, current, target)
-}
-
 func (gui *Gui) EditFile(file string) error {
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
@@ -117,7 +108,7 @@ func (gui *Gui) InputPathKeybinding() {
 
 			parent := filepath.Dir(path)
 			if parent != "" && file.IsDir() {
-				if err := gui.ChangeDir(parent, path); err != nil {
+				if err := gui.FileBrowser.ChangeDir(gui, parent, path); err != nil {
 					gui.Message(err.Error(), FilesPanel)
 					return
 				}

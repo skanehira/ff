@@ -226,7 +226,7 @@ func (gui *Gui) Run() error {
 		return err
 	}
 
-	gui.ChangeDir(currentDir, currentDir)
+	gui.FileBrowser.ChangeDir(gui, currentDir, currentDir)
 
 	grid := tview.NewGrid().SetRows(1, 0, 1).
 		AddItem(gui.InputPath, 0, 0, 1, 2, 0, 0, true).

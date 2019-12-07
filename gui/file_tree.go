@@ -109,6 +109,9 @@ func (t *Tree) GetSelectEntry() *File {
 
 func (t *Tree) ChangeDir(gui *Gui, current string, target string) error {
 	t.searchWord = ""
+	if gui.Config.Bookmark.Enable {
+		gui.Bookmark.SetSearchWord("")
+	}
 	t.SetSelectPos(current)
 
 	root := tview.NewTreeNode(".").SetReference(&File{PathName: current})

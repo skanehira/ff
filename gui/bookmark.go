@@ -272,7 +272,7 @@ func (b *Bookmarks) BookmarkKeybinding(gui *Gui) {
 				return event
 			}
 
-			if err := gui.ChangeDir(gui.InputPath.GetText(), entry.Name); err != nil {
+			if err := gui.FileBrowser.ChangeDir(gui, gui.InputPath.GetText(), entry.Name); err != nil {
 				gui.Message(err.Error(), BookmarkPanel)
 				return event
 			}

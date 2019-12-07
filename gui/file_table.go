@@ -179,7 +179,10 @@ func (e *FileTable) UpdateView() {
 }
 
 func (e *FileTable) ChangeDir(gui *Gui, current, target string) error {
-	e.SetSearchWord("")
+	e.searchWord = ""
+	if gui.Config.Bookmark.Enable {
+		gui.Bookmark.SetSearchWord("")
+	}
 
 	// save select position
 	e.SetSelectPos(current)
@@ -206,6 +209,8 @@ func (e *FileTable) ChangeDir(gui *Gui, current, target string) error {
 
 	// restore select position
 	e.RestorePos(target)
+
+	gui.InputPath.SetText(target)
 
 	return nil
 }
@@ -239,7 +244,7 @@ func (e *FileTable) Keybinding(gui *Gui) {
 			parent := filepath.Dir(current)
 
 			if parent != "" {
-				if err := gui.ChangeDir(current, parent); err != nil {
+				if err := e.ChangeDir(gui, current, parent); err != nil {
 					gui.Message(err.Error(), FilesPanel)
 				}
 			}
@@ -250,7 +255,7 @@ func (e *FileTable) Keybinding(gui *Gui) {
 
 			if entry != nil && entry.IsDir {
 				current := gui.InputPath.GetText()
-				if err := gui.ChangeDir(current, entry.PathName); err != nil {
+				if err := e.ChangeDir(gui, current, entry.PathName); err != nil {
 					gui.Message(err.Error(), FilesPanel)
 				}
 			}
