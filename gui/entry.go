@@ -46,10 +46,10 @@ type selectPos struct {
 // EntryManager file list
 type EntryManager struct {
 	enableIgnorecase bool
+	entries          []*Entry
+	selectPos        map[string]selectPos
+	searchWord       string
 	*tview.Table
-	entries    []*Entry
-	selectPos  map[string]selectPos
-	searchWord string
 }
 
 // NewEntryManager new entry list
