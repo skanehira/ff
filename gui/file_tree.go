@@ -174,7 +174,8 @@ func (t *Tree) Keybinding(gui *Gui) {
 			node.Expand()
 			f := t.GetSelectEntry()
 			if f != nil && f.IsDir {
-				t.AddNode(node, f.PathName)
+				files := GetFiles(f.PathName, t.searchWord, t.ignorecase)
+				t.AddNode(node, files)
 			}
 
 		case 'd':
@@ -383,15 +384,13 @@ func (t *Tree) SetEntries(path string) []*File {
 		return nil
 	}
 
-	t.AddNode(t.GetRoot(), path)
+	t.AddNode(t.GetRoot(), files)
 
 	t.files = files
 	return files
 }
 
-func (t *Tree) AddNode(parent *tview.TreeNode, path string) {
-	files := GetFiles(path, t.searchWord, t.ignorecase)
-
+func (t *Tree) AddNode(parent *tview.TreeNode, files []*File) {
 	filesLen := len(files)
 	if filesLen == 0 {
 		return
