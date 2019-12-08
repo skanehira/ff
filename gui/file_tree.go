@@ -20,11 +20,12 @@ type Tree struct {
 	*tview.TreeView
 }
 
-func NewTree() *Tree {
+func NewTree(ignorecase bool) *Tree {
 	t := &Tree{
 		TreeView:   tview.NewTreeView(),
 		selectPos:  make(map[string]string),
 		expandInfo: make(map[string]struct{}),
+		ignorecase: ignorecase,
 	}
 
 	t.SetBorder(true).SetTitle("files").SetTitleAlign(tview.AlignLeft)
@@ -40,7 +41,32 @@ func (t *Tree) SetSearchWord(word string) {
 }
 
 func (t *Tree) SearchFiles(gui *Gui) {
-	// file search
+	pageName := "search"
+	if gui.Pages.HasPage(pageName) {
+		searchFiles.SetText(t.searchWord)
+		gui.Pages.ShowPage(pageName)
+	} else {
+		searchFiles = tview.NewInputField()
+		searchFiles.SetBorder(true).SetTitle("search").SetTitleAlign(tview.AlignLeft)
+		searchFiles.SetChangedFunc(func(text string) {
+			t.SetSearchWord(text)
+			current := gui.InputPath.GetText()
+			t.SetEntries(current)
+
+			if gui.Config.Preview.Enable {
+				gui.Preview.UpdateView(gui, t.GetSelectEntry())
+			}
+		})
+		searchFiles.SetLabel("word").SetLabelWidth(5).SetDoneFunc(func(key tcell.Key) {
+			if key == tcell.KeyEnter {
+				gui.Pages.HidePage(pageName)
+				gui.FocusPanel(FileTablePanel)
+			}
+
+		})
+
+		gui.Pages.AddAndSwitchToPage(pageName, gui.Modal(searchFiles, 0, 3), true).ShowPage("main")
+	}
 }
 
 func (t *Tree) SetSelectPos(path string) {
@@ -339,7 +365,7 @@ func (t *Tree) Keybinding(gui *Gui) {
 				})
 		case 'f', '/':
 			t.SearchFiles(gui)
-
+			t.UpdateView()
 		}
 
 		return event

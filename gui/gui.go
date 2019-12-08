@@ -81,7 +81,7 @@ func New(config Config) *Gui {
 	}
 
 	if gui.Config.EnableTree {
-		gui.FileBrowser = NewTree()
+		gui.FileBrowser = NewTree(config.IgnoreCase)
 	} else {
 		gui.FileBrowser = NewFileTable(config.IgnoreCase)
 	}
