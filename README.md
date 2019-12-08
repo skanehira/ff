@@ -46,6 +46,8 @@ Usage of ff:
         enable log
   -preview
         enable preview panel
+  -tree
+        use tree mode
 ```
 
 If you use `-log` that will print log.
@@ -126,6 +128,35 @@ So, you only can executing command that doesn't use stdin, stdout, stderr.
 | `ctrl-f`    | move netxt page                   |
 | `h`         | cd to parent path                 |
 | `l`         | cd to specified path              |
+| `y`         | copy selected file or directory   |
+| `p`         | paste file or directory           |
+| `d`         | delete selected file or directory |
+| `m`         | make a new directory              |
+| `n`         | make a new file                   |
+| `r`         | rename a directory or file        |
+| `e`         | edit file with `$EDITOR`          |
+| `o`         | open file or directory            |
+| `f` or `/`  | search files or directories       |
+| `ctrl-j`    | scroll preview panel down         |
+| `ctrl-k`    | scroll preview panel up           |
+| `c` or `:`  | focus cmdline panel               |
+| `.`         | edit config.yaml                  |
+| `b`         | bookmark dirctory                 |
+| `B`         | open bookmarks panel              |
+| `F1` or `?` | open help panel                   |
+
+### files(tree mode)
+| key         | operation                         |
+|-------------|-----------------------------------|
+| `tab`       | focus to files                    |
+| `j`         | move to next                      |
+| `k`         | move to previous                  |
+| `g`         | move to top                       |
+| `G`         | move to bottom                    |
+| `h`         | cd to parent path                 |
+| `l`         | cd to specified path              |
+| `H`         | move to parent path               |
+| `L`         | move to specified path            |
 | `y`         | copy selected file or directory   |
 | `p`         | paste file or directory           |
 | `d`         | delete selected file or directory |
