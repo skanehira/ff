@@ -53,7 +53,7 @@ func GetFiles(path, searchWord string, ignorecase bool) []*File {
 			name = file.Name()
 			word = searchWord
 		}
-		if strings.Index(name, word) == -1 {
+		if !strings.Contains(name, word) {
 			continue
 		}
 		// get file times
