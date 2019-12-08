@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	helpHeaders      = []string{"KEY", "DESCRIPTION"}
-	filesKeybindings = []map[string]string{
+	helpHeaders    = []string{"KEY", "DESCRIPTION"}
+	fileTableHelps = []map[string]string{
 		{"tab": "focus to files"},
 		{"j": "move next"},
 		{"k": "move previous"},
@@ -34,15 +34,15 @@ var (
 		{"B": "open bookmarks panel"},
 	}
 
-	pathKeybindings = []map[string]string{
+	pathHelps = []map[string]string{
 		{"enter": "change directory"},
 	}
 
-	cmdKeybindings = []map[string]string{
+	cmdlineHelps = []map[string]string{
 		{"enter": "execute command"},
 	}
 
-	bookmarkKeybindings = []map[string]string{
+	bookmarkHelps = []map[string]string{
 		{"a": "add bookmark"},
 		{"d": "delete bookmark"},
 		{"q": "close bookmarks panel"},
@@ -83,13 +83,13 @@ func (h *Help) UpdateView(panel Panel) {
 
 	switch panel {
 	case PathPanel:
-		keybindings = pathKeybindings
+		keybindings = pathHelps
 	case FileTablePanel:
-		keybindings = filesKeybindings
+		keybindings = fileTableHelps
 	case CmdLinePanel:
-		keybindings = cmdKeybindings
+		keybindings = cmdlineHelps
 	case BookmarkPanel:
-		keybindings = bookmarkKeybindings
+		keybindings = bookmarkHelps
 	}
 
 	for i, keybind := range keybindings {
