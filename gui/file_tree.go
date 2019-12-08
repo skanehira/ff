@@ -56,6 +56,10 @@ func (t *Tree) SetSelectPos(path string) {
 func (t *Tree) RestorePos(path string) {
 	oldpath, ok := t.selectPos[path]
 	if !ok {
+		child := t.GetRoot().GetChildren()
+		if len(child) > 0 {
+			t.SetCurrentNode(child[0])
+		}
 		return
 	}
 

@@ -195,6 +195,8 @@ func (e *FileTable) ChangeDir(gui *Gui, current, target string) error {
 	count := e.GetRowCount()
 	if row > count {
 		e.Select(count-1, 0)
+	} else {
+		e.Select(1, 0)
 	}
 
 	if gui.Config.Preview.Enable {
