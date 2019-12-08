@@ -84,7 +84,7 @@ func (h *Help) UpdateView(panel Panel) {
 	switch panel {
 	case PathPanel:
 		keybindings = pathKeybindings
-	case FilesPanel:
+	case FileTablePanel:
 		keybindings = filesKeybindings
 	case CmdLinePanel:
 		keybindings = cmdKeybindings

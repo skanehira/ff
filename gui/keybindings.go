@@ -46,7 +46,7 @@ func (gui *Gui) commonFileBrowserKeybinding(event *tcell.EventKey) {
 		}
 
 		if err := gui.EditFile(entry.PathName); err != nil {
-			gui.Message(err.Error(), FilesPanel)
+			gui.Message(err.Error(), FileTablePanel)
 		}
 
 	case 'q':
@@ -58,7 +58,7 @@ func (gui *Gui) commonFileBrowserKeybinding(event *tcell.EventKey) {
 			return
 		}
 		if err := system.Open(entry.PathName); err != nil {
-			gui.Message(err.Error(), FilesPanel)
+			gui.Message(err.Error(), FileTablePanel)
 		}
 
 	case ':', 'c':
@@ -66,7 +66,7 @@ func (gui *Gui) commonFileBrowserKeybinding(event *tcell.EventKey) {
 
 	case '.':
 		if err := gui.EditFile(gui.Config.ConfigFile); err != nil {
-			gui.Message(err.Error(), FilesPanel)
+			gui.Message(err.Error(), FileTablePanel)
 		}
 
 	case 'b':
@@ -74,7 +74,7 @@ func (gui *Gui) commonFileBrowserKeybinding(event *tcell.EventKey) {
 			entry := gui.FileBrowser.GetSelectEntry()
 			if entry != nil && entry.IsDir {
 				if err := gui.Bookmark.Add(entry.PathName); err != nil {
-					gui.Message(err.Error(), FilesPanel)
+					gui.Message(err.Error(), FileTablePanel)
 				}
 			}
 		}
@@ -82,7 +82,7 @@ func (gui *Gui) commonFileBrowserKeybinding(event *tcell.EventKey) {
 	case 'B':
 		if gui.Config.Bookmark.Enable {
 			if err := gui.Bookmark.Update(); err != nil {
-				gui.Message(err.Error(), FilesPanel)
+				gui.Message(err.Error(), FileTablePanel)
 				return
 			}
 			gui.CurrentPanel = BookmarkPanel
@@ -180,10 +180,10 @@ func (gui *Gui) InputPathKeybinding() {
 			parent := filepath.Dir(path)
 			if parent != "" && file.IsDir() {
 				if err := gui.FileBrowser.ChangeDir(gui, parent, path); err != nil {
-					gui.Message(err.Error(), FilesPanel)
+					gui.Message(err.Error(), FileTablePanel)
 					return
 				}
-				gui.FocusPanel(FilesPanel)
+				gui.FocusPanel(FileTablePanel)
 			}
 		}
 	})

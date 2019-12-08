@@ -21,7 +21,7 @@ type Panel int
 
 const (
 	PathPanel Panel = iota + 1
-	FilesPanel
+	FileTablePanel
 	CmdLinePanel
 	BookmarkPanel
 )
@@ -163,7 +163,7 @@ func (gui *Gui) FocusPanel(panel Panel) {
 	switch panel {
 	case PathPanel:
 		p = gui.InputPath
-	case FilesPanel:
+	case FileTablePanel:
 		p = gui.FileBrowser
 	case CmdLinePanel:
 		p = gui.CmdLine
@@ -242,7 +242,7 @@ func (gui *Gui) Run() error {
 		grid.AddItem(gui.FileBrowser, 1, 0, 1, 2, 0, 0, true)
 	}
 
-	gui.CurrentPanel = FilesPanel
+	gui.CurrentPanel = FileTablePanel
 	gui.SetKeybindings()
 	gui.Pages.AddAndSwitchToPage("main", grid, true)
 

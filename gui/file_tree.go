@@ -146,13 +146,13 @@ func (t *Tree) Keybinding(gui *Gui) {
 
 		switch event.Key() {
 		case tcell.KeyF1:
-			gui.Help.UpdateView(FilesPanel)
+			gui.Help.UpdateView(FileTablePanel)
 			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
 		}
 
 		switch event.Rune() {
 		case '?':
-			gui.Help.UpdateView(FilesPanel)
+			gui.Help.UpdateView(FileTablePanel)
 			gui.Pages.AddAndSwitchToPage("help", gui.Modal(gui.Help, 0, 0), true).ShowPage("main")
 
 		case 'H':
@@ -183,7 +183,7 @@ func (t *Tree) Keybinding(gui *Gui) {
 			}
 
 		case 'd':
-			gui.Confirm("do you want to remove this?", "yes", FilesPanel, func() error {
+			gui.Confirm("do you want to remove this?", "yes", FileTablePanel, func() error {
 				entry := t.GetSelectEntry()
 				if entry == nil {
 					return nil
@@ -218,7 +218,7 @@ func (t *Tree) Keybinding(gui *Gui) {
 			if gui.Register.CopySource != nil {
 				source := gui.Register.CopySource
 
-				gui.Form(map[string]string{"name": source.Name}, "paste", "new name", "new_name", FilesPanel,
+				gui.Form(map[string]string{"name": source.Name}, "paste", "new name", "new_name", FileTablePanel,
 					7, func(values map[string]string) error {
 						name := values["name"]
 						if name == "" {
@@ -249,7 +249,7 @@ func (t *Tree) Keybinding(gui *Gui) {
 
 		case 'm':
 			gui.Form(map[string]string{"name": ""}, "create", "new direcotry",
-				"create_directory", FilesPanel,
+				"create_directory", FileTablePanel,
 				7, func(values map[string]string) error {
 					name := values["name"]
 					if name == "" {
@@ -282,7 +282,7 @@ func (t *Tree) Keybinding(gui *Gui) {
 				return event
 			}
 
-			gui.Form(map[string]string{"new name": entry.Name}, "rename", "new name", "rename", FilesPanel,
+			gui.Form(map[string]string{"new name": entry.Name}, "rename", "new name", "rename", FileTablePanel,
 				7, func(values map[string]string) error {
 					name := values["new name"]
 					if name == "" {
@@ -306,7 +306,7 @@ func (t *Tree) Keybinding(gui *Gui) {
 				})
 
 		case 'n':
-			gui.Form(map[string]string{"name": ""}, "create", "new file", "create_file", FilesPanel,
+			gui.Form(map[string]string{"name": ""}, "create", "new file", "create_file", FileTablePanel,
 				7, func(values map[string]string) error {
 					name := values["name"]
 					if name == "" {

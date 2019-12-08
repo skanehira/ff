@@ -238,7 +238,7 @@ func (e *Bookmarks) SearchBookmark(gui *Gui) {
 
 func (b *Bookmarks) CloseBookmark(gui *Gui) {
 	gui.Pages.RemovePage("bookmark").ShowPage("main")
-	gui.FocusPanel(FilesPanel)
+	gui.FocusPanel(FileTablePanel)
 }
 
 func (b *Bookmarks) BookmarkKeybinding(gui *Gui) {
