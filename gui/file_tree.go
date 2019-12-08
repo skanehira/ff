@@ -121,7 +121,7 @@ func (t *Tree) ChangeDir(gui *Gui, current string, target string) error {
 	t.SetSelectPos(current)
 
 	root := tview.NewTreeNode(filepath.Base(target)).
-		SetReference(&File{PathName: current}).SetSelectable(false)
+		SetReference(&File{PathName: current, IsDir: true}).SetSelectable(false)
 
 	t.SetRoot(root).SetCurrentNode(root)
 	originRoot := *root
