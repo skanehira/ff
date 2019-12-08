@@ -389,7 +389,6 @@ func (t *Tree) SetEntries(path string) []*File {
 	files := GetFiles(path, t.searchWord, t.ignorecase)
 
 	if len(files) == 0 {
-		t.files = nil
 		return nil
 	}
 

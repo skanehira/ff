@@ -52,7 +52,7 @@ var (
 		{"r": "rename a directory or file"},
 		{"e": "edit file with $EDITOR"},
 		{"o": "open file or dierectory"},
-		//{"f or /": "search files or directories"},
+		{"f or /": "search files or directories"},
 		{"ctrl-j": "scroll preview panel down"},
 		{"ctrl-k": "scroll preview panel up"},
 		{"c or :": "focus cmdline"},
