@@ -34,6 +34,33 @@ var (
 		{"B": "open bookmarks panel"},
 	}
 
+	fileTreeHelps = []map[string]string{
+		{"tab": "focus to files"},
+		{"j": "move next"},
+		{"k": "move previous"},
+		{"g": "move to top"},
+		{"G": "move to bottom"},
+		{"h": "collapse specified path"},
+		{"l": "expand specified path"},
+		{"H": "move to parent path"},
+		{"L": "move to specified path"},
+		{"y": "copy selected file or directory"},
+		{"p": "paste file or directory"},
+		{"d": "delete selected file or directory"},
+		{"m": "make a new directory"},
+		{"n": "make a new file"},
+		{"r": "rename a directory or file"},
+		{"e": "edit file with $EDITOR"},
+		{"o": "open file or dierectory"},
+		//{"f or /": "search files or directories"},
+		{"ctrl-j": "scroll preview panel down"},
+		{"ctrl-k": "scroll preview panel up"},
+		{"c or :": "focus cmdline"},
+		{".": "edit config.yaml"},
+		{"b": "bookmark directory"},
+		{"B": "open bookmarks panel"},
+	}
+
 	pathHelps = []map[string]string{
 		{"enter": "change directory"},
 	}
@@ -86,6 +113,8 @@ func (h *Help) UpdateView(panel Panel) {
 		keybindings = pathHelps
 	case FileTablePanel:
 		keybindings = fileTableHelps
+	case FileTreePanel:
+		keybindings = fileTreeHelps
 	case CmdLinePanel:
 		keybindings = cmdlineHelps
 	case BookmarkPanel:

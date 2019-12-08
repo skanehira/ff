@@ -22,6 +22,7 @@ type Panel int
 const (
 	PathPanel Panel = iota + 1
 	FileTablePanel
+	FileTreePanel
 	CmdLinePanel
 	BookmarkPanel
 )
@@ -163,7 +164,7 @@ func (gui *Gui) FocusPanel(panel Panel) {
 	switch panel {
 	case PathPanel:
 		p = gui.InputPath
-	case FileTablePanel:
+	case FileTablePanel, FileTreePanel:
 		p = gui.FileBrowser
 	case CmdLinePanel:
 		p = gui.CmdLine
