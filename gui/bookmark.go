@@ -1,13 +1,13 @@
 package gui
 
 import (
+	"database/sql"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/gdamore/tcell"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
 	"github.com/skanehira/ff/system"
 )
@@ -19,34 +19,33 @@ func (d DBLogger) Print(v ...interface{}) {
 }
 
 type Bookmark struct {
-	ID   int    `gorm:"id; type:integer; primary key; autoincrement"`
-	Name string `gorm:"name"`
+	ID   int
+	Name string
 }
 
 type BookmarkStore struct {
-	db *gorm.DB
+	db *sql.DB
 }
 
 func NewBookmarkStore(file string) (*BookmarkStore, error) {
 	file = os.ExpandEnv(file)
-	// if db file is not exist, create new db file
+	// if db file is not exist, use in memory db
 	if !system.IsExist(file) {
-		if _, err := os.Create(file); err != nil {
-			log.Println(err)
-			// if can't create new file, use in memory db
-			file = ":memory:"
-		}
+		file = ":memory:"
 	}
 
-	db, err := gorm.Open("sqlite3", file)
+	db, err := sql.Open("sqlite3", file)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	db.SetLogger(DBLogger{})
-	db.LogMode(true)
 
-	if err := db.AutoMigrate(&Bookmark{}).Error; err != nil {
+	createSql := `
+CREATE TABLE IF NOT EXISTS "bookmarks" ("id" integer, "name" varchar(255) , PRIMARY KEY ("id"));`
+
+	_, err = db.Exec(createSql)
+
+	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
@@ -56,7 +55,11 @@ func NewBookmarkStore(file string) (*BookmarkStore, error) {
 
 func (b *BookmarkStore) HasBookmark(name string) bool {
 	var count int
-	if err := b.db.Table("bookmarks").Where("name = ?", name).Count(&count).Error; err != nil {
+
+	row := b.db.QueryRow("select count(*) from bookmarks where name = ?", name)
+
+	if err := row.Scan(&count); err != nil {
+		log.Println(err)
 		return false
 	}
 
@@ -69,7 +72,11 @@ func (b *BookmarkStore) HasBookmark(name string) bool {
 
 func (b *BookmarkStore) Save(bookmark Bookmark) error {
 	if !b.HasBookmark(bookmark.Name) {
-		return b.db.Create(&bookmark).Error
+		_, err := b.db.Exec("insert into bookmarks (name) values (?)", bookmark.Name)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
 	}
 	return nil
 }
@@ -77,16 +84,36 @@ func (b *BookmarkStore) Save(bookmark Bookmark) error {
 func (b *BookmarkStore) Load() ([]Bookmark, error) {
 	var bookmarks []Bookmark
 
-	if err := b.db.Table("bookmarks").Scan(&bookmarks).Error; err != nil {
+	rows, err := b.db.Query("select * from bookmarks")
+	if err != nil {
+		log.Println(err)
 		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int
+		var name string
+		if err := rows.Scan(&id, &name); err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		bookmarks = append(bookmarks, Bookmark{
+			ID:   id,
+			Name: name,
+		})
 	}
 
 	return bookmarks, nil
 }
 
 func (b *BookmarkStore) Delete(id int) error {
-	bookmark := &Bookmark{ID: id}
-	return b.db.Delete(bookmark).Error
+	_, err := b.db.Exec("delete from bookmarks where id = ?", id)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
 }
 
 type Bookmarks struct {
@@ -109,6 +136,7 @@ func NewBookmark(config Config) (*Bookmarks, error) {
 
 	store, err := NewBookmarkStore(config.Bookmark.File)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
