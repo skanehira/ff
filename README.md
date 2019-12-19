@@ -129,6 +129,7 @@ So, you only can executing command that doesn't use stdin, stdout, stderr.
 | `h`         | cd to parent path                 |
 | `l`         | cd to specified path              |
 | `y`         | copy selected file or directory   |
+| `x`         | move file or directory            |
 | `p`         | paste file or directory           |
 | `d`         | delete selected file or directory |
 | `m`         | make a new directory              |
@@ -158,6 +159,7 @@ So, you only can executing command that doesn't use stdin, stdout, stderr.
 | `H`         | move to parent path               |
 | `L`         | move to specified path            |
 | `y`         | copy selected file or directory   |
+| `x`         | move file or directory            |
 | `p`         | paste file or directory           |
 | `d`         | delete selected file or directory |
 | `m`         | make a new directory              |
