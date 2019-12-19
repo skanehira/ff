@@ -281,7 +281,7 @@ func (e *FileTable) Keybinding(gui *Gui) {
 				return nil
 			})
 
-		// copy entry
+		// copy file
 		case 'y':
 			if len(e.files) == 0 {
 				return event
@@ -290,6 +290,23 @@ func (e *FileTable) Keybinding(gui *Gui) {
 			e.UpdateColor()
 			entry := e.GetSelectEntry()
 			gui.Register.CopySource = entry
+			gui.Register.MoveSource = nil
+
+			row, _ := e.GetSelection()
+			for i := 0; i < 5; i++ {
+				e.GetCell(row, i).SetTextColor(tcell.ColorYellow)
+			}
+
+		// move file
+		case 'x':
+			if len(e.files) == 0 {
+				return event
+			}
+
+			e.UpdateColor()
+			entry := e.GetSelectEntry()
+			gui.Register.CopySource = nil
+			gui.Register.MoveSource = entry
 
 			row, _ := e.GetSelection()
 			for i := 0; i < 5; i++ {
@@ -315,6 +332,29 @@ func (e *FileTable) Keybinding(gui *Gui) {
 						}
 
 						gui.Register.CopySource = nil
+						e.SetEntries(gui.InputPath.GetText())
+						return nil
+					})
+			}
+
+			if gui.Register.MoveSource != nil {
+				source := gui.Register.MoveSource
+
+				gui.Form(map[string]string{"new path": source.Name}, "move", "move file", "move", FileTablePanel,
+					7, func(values map[string]string) error {
+						name := values["new path"]
+						if name == "" {
+							return ErrNoFileName
+						}
+
+						current := gui.InputPath.GetText()
+
+						target := filepath.Join(current, name)
+						if err := system.Rename(source.PathName, target); err != nil {
+							return err
+						}
+
+						gui.Register.MoveSource = nil
 						e.SetEntries(gui.InputPath.GetText())
 						return nil
 					})

@@ -239,7 +239,17 @@ func (t *Tree) Keybinding(gui *Gui) {
 		case 'y':
 			entry := t.GetSelectEntry()
 			if entry != nil {
+				gui.Register.MoveSource = nil
 				gui.Register.CopySource = entry
+				t.GetCurrentNode().SetColor(tcell.ColorYellow)
+			}
+
+		// copy entry
+		case 'x':
+			entry := t.GetSelectEntry()
+			if entry != nil {
+				gui.Register.CopySource = nil
+				gui.Register.MoveSource = entry
 				t.GetCurrentNode().SetColor(tcell.ColorYellow)
 			}
 
@@ -272,6 +282,29 @@ func (t *Tree) Keybinding(gui *Gui) {
 						}
 
 						gui.Register.CopySource = nil
+						t.UpdateView()
+						return nil
+					})
+			}
+
+			if gui.Register.MoveSource != nil {
+				source := gui.Register.MoveSource
+
+				gui.Form(map[string]string{"new path": source.Name}, "move", "move file", "move", FileTablePanel,
+					7, func(values map[string]string) error {
+						name := values["new path"]
+						if name == "" {
+							return ErrNoFileName
+						}
+
+						current := gui.InputPath.GetText()
+
+						target := filepath.Join(current, name)
+						if err := system.Rename(source.PathName, target); err != nil {
+							return err
+						}
+
+						gui.Register.MoveSource = nil
 						t.UpdateView()
 						return nil
 					})

@@ -32,6 +32,7 @@ type Register struct {
 	MoveSources []*File
 	CopySources []*File
 	CopySource  *File
+	MoveSource  *File
 }
 
 // ClearMoveResources clear resources
