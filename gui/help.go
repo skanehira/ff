@@ -132,6 +132,8 @@ func (h *Help) UpdateView(panel Panel) {
 func (h *Help) Keybinding(gui *Gui) {
 	h.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Rune() {
+		case 'l':
+			return nil
 		case 'q':
 			gui.Pages.RemovePage("help")
 			gui.FocusPanel(gui.CurrentPanel)
