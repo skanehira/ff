@@ -107,6 +107,11 @@ func (gui *Gui) ExecCmd(attachStd bool, cmd string, args ...string) error {
 		command.Stdout = os.Stdout
 		command.Stderr = os.Stderr
 	}
+	defer func() {
+		command.Stdin = nil
+		command.Stdout = nil
+		command.Stderr = nil
+	}()
 
 	return command.Run()
 }
