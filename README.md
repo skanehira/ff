@@ -140,7 +140,6 @@ So, you only can executing command that doesn't use stdin, stdout, stderr.
 | `f` or `/`  | search files or directories       |
 | `ctrl-j`    | scroll preview panel down         |
 | `ctrl-k`    | scroll preview panel up           |
-| `c` or `:`  | focus cmdline panel               |
 | `.`         | edit config.yaml                  |
 | `b`         | bookmark dirctory                 |
 | `B`         | open bookmarks panel              |
@@ -170,7 +169,6 @@ So, you only can executing command that doesn't use stdin, stdout, stderr.
 | `f` or `/`  | search files or directories       |
 | `ctrl-j`    | scroll preview panel down         |
 | `ctrl-k`    | scroll preview panel up           |
-| `c` or `:`  | focus cmdline panel               |
 | `.`         | edit config.yaml                  |
 | `b`         | bookmark dirctory                 |
 | `B`         | open bookmarks panel              |
@@ -185,13 +183,6 @@ So, you only can executing command that doesn't use stdin, stdout, stderr.
 | `ctrl-g`    | go to bookmark        |
 | `f`/`/`     | search bookmarks      |
 | `F1` or `?` | open help panel       |
-
-### cmd
-| key         | operation         |
-|-------------|-------------------|
-| `enter`     | executing command |
-| `tab`/`esc` | focus files       |
-| `F1`        | open help panel   |
 
 # Author
 skanehira

@@ -61,9 +61,6 @@ func (gui *Gui) commonFileBrowserKeybinding(event *tcell.EventKey) {
 			gui.Message(err.Error(), FileTablePanel)
 		}
 
-	case ':', 'c':
-		gui.FocusPanel(CmdLinePanel)
-
 	case '.':
 		if err := gui.EditFile(gui.Config.ConfigFile); err != nil {
 			gui.Message(err.Error(), FileTablePanel)
@@ -95,7 +92,6 @@ func (gui *Gui) commonFileBrowserKeybinding(event *tcell.EventKey) {
 func (gui *Gui) SetKeybindings() {
 	gui.FileBrowser.Keybinding(gui)
 	gui.InputPathKeybinding()
-	gui.CmdLine.Keybinding(gui)
 	gui.Help.Keybinding(gui)
 
 	if gui.Config.Bookmark.Enable {

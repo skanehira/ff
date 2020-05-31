@@ -28,7 +28,6 @@ var (
 		{"f or /": "search files or directories"},
 		{"ctrl-j": "scroll preview panel down"},
 		{"ctrl-k": "scroll preview panel up"},
-		{"c or :": "focus cmdline"},
 		{".": "edit config.yaml"},
 		{"b": "bookmark directory"},
 		{"B": "open bookmarks panel"},
@@ -55,7 +54,6 @@ var (
 		{"f or /": "search files or directories"},
 		{"ctrl-j": "scroll preview panel down"},
 		{"ctrl-k": "scroll preview panel up"},
-		{"c or :": "focus cmdline"},
 		{".": "edit config.yaml"},
 		{"b": "bookmark directory"},
 		{"B": "open bookmarks panel"},
@@ -63,10 +61,6 @@ var (
 
 	pathHelps = []map[string]string{
 		{"enter": "change directory"},
-	}
-
-	cmdlineHelps = []map[string]string{
-		{"enter": "execute command"},
 	}
 
 	bookmarkHelps = []map[string]string{
@@ -115,8 +109,6 @@ func (h *Help) UpdateView(panel Panel) {
 		keybindings = fileTableHelps
 	case FileTreePanel:
 		keybindings = fileTreeHelps
-	case CmdLinePanel:
-		keybindings = cmdlineHelps
 	case BookmarkPanel:
 		keybindings = bookmarkHelps
 	}

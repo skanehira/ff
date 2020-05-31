@@ -23,7 +23,6 @@ const (
 	PathPanel Panel = iota + 1
 	FileTablePanel
 	FileTreePanel
-	CmdLinePanel
 	BookmarkPanel
 )
 
@@ -54,7 +53,6 @@ type Gui struct {
 	HistoryManager *HistoryManager
 	FileBrowser    FileBrowser
 	Preview        *Preview
-	CmdLine        *CmdLine
 	Bookmark       *Bookmarks
 	Help           *Help
 	App            *tview.Application
@@ -69,7 +67,6 @@ func New(config Config) *Gui {
 		Config:         config,
 		InputPath:      tview.NewInputField().SetLabel("path").SetLabelWidth(5),
 		HistoryManager: NewHistoryManager(),
-		CmdLine:        NewCmdLine(),
 		Help:           NewHelp(),
 		App:            tview.NewApplication(),
 		Register:       &Register{},
@@ -172,8 +169,6 @@ func (gui *Gui) FocusPanel(panel Panel) {
 		p = gui.InputPath
 	case FileTablePanel, FileTreePanel:
 		p = gui.FileBrowser
-	case CmdLinePanel:
-		p = gui.CmdLine
 	case BookmarkPanel:
 		p = gui.Bookmark
 	}
@@ -235,9 +230,8 @@ func (gui *Gui) Run() error {
 
 	gui.FileBrowser.ChangeDir(gui, currentDir, currentDir)
 
-	grid := tview.NewGrid().SetRows(1, 0, 1).
-		AddItem(gui.InputPath, 0, 0, 1, 2, 0, 0, true).
-		AddItem(gui.CmdLine, 2, 0, 1, 2, 0, 0, true)
+	grid := tview.NewGrid().SetRows(1, 0).
+		AddItem(gui.InputPath, 0, 0, 1, 2, 0, 0, true)
 
 	if gui.Config.Preview.Enable {
 		grid.SetColumns(0, 0).
