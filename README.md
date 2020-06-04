@@ -46,6 +46,8 @@ Usage of ff:
         enable log
   -preview
         enable preview panel
+  -show-hidden
+        show hidden files
   -tree
         use tree mode
 ```
@@ -73,6 +75,9 @@ preview:
 
 # if ignore_case is true, ignore case when searching
 ignore_case: true
+
+# if show_hidden is true, ff will display hidden files
+show_hiddne: false
 
 # if enable is true, can use bookmark
 bookmark:
