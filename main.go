@@ -21,6 +21,7 @@ var (
 	enablePreview = flag.Bool("preview", false, "enable preview panel")
 	ignorecase    = flag.Bool("ignorecase", false, "ignore case when searcing")
 	enableTree    = flag.Bool("tree", false, "use tree mode")
+	showHidden    = flag.Bool("show-hidden", false, "show hidden files")
 )
 
 var (
@@ -91,6 +92,8 @@ func initConfig() gui.Config {
 	} else {
 		system.OpenCmd = config.OpenCmd
 	}
+
+	config.ShowHidden = *showHidden
 	return config
 }
 

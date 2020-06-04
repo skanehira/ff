@@ -24,6 +24,7 @@ type selectPos struct {
 // FileTable file list
 type FileTable struct {
 	enableIgnorecase bool
+	showHidden       bool
 	files            []*File
 	selectPos        map[string]selectPos
 	searchWord       string
@@ -31,9 +32,10 @@ type FileTable struct {
 }
 
 // NewFileTable new entry list
-func NewFileTable(enableIgnorecase bool) *FileTable {
+func NewFileTable(enableIgnorecase, showHidden bool) *FileTable {
 	e := &FileTable{
 		enableIgnorecase: enableIgnorecase,
+		showHidden:       showHidden,
 		Table:            tview.NewTable().Select(0, 0).SetFixed(1, 1).SetSelectable(true, false),
 		selectPos:        make(map[string]selectPos),
 	}
@@ -74,7 +76,7 @@ func (e *FileTable) RestorePos(path string) {
 
 // SetEntries set entries
 func (e *FileTable) SetEntries(path string) []*File {
-	files := GetFiles(path, e.searchWord, e.enableIgnorecase)
+	files := GetFiles(path, e.searchWord, e.enableIgnorecase, e.showHidden)
 
 	if len(files) == 0 {
 		e.files = nil

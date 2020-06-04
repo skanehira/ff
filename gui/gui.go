@@ -79,9 +79,9 @@ func New(config Config) *Gui {
 	}
 
 	if gui.Config.EnableTree {
-		gui.FileBrowser = NewTree(config.IgnoreCase)
+		gui.FileBrowser = NewTree(config.IgnoreCase, config.ShowHidden)
 	} else {
-		gui.FileBrowser = NewFileTable(config.IgnoreCase)
+		gui.FileBrowser = NewFileTable(config.IgnoreCase, config.ShowHidden)
 	}
 
 	if gui.Config.Bookmark.Enable {

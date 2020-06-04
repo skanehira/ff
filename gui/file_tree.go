@@ -13,6 +13,7 @@ import (
 type Tree struct {
 	files      []*File
 	ignorecase bool
+	showHidden bool
 	searchWord string
 	selectPos  map[string]string
 	expandInfo map[string]struct{}
@@ -20,12 +21,13 @@ type Tree struct {
 	*tview.TreeView
 }
 
-func NewTree(ignorecase bool) *Tree {
+func NewTree(ignorecase, showHidden bool) *Tree {
 	t := &Tree{
 		TreeView:   tview.NewTreeView(),
 		selectPos:  make(map[string]string),
 		expandInfo: make(map[string]struct{}),
 		ignorecase: ignorecase,
+		showHidden: showHidden,
 	}
 
 	t.SetBorder(true).SetTitle("files").SetTitleAlign(tview.AlignLeft)
@@ -206,7 +208,7 @@ func (t *Tree) Keybinding(gui *Gui) {
 			node := t.GetCurrentNode()
 			f := t.GetSelectEntry()
 			if f != nil && f.IsDir {
-				files := GetFiles(f.PathName, t.searchWord, t.ignorecase)
+				files := GetFiles(f.PathName, t.searchWord, t.ignorecase, t.showHidden)
 				t.AddNode(node, files)
 				node.Expand()
 				t.expandInfo[f.PathName] = struct{}{}
@@ -419,7 +421,7 @@ func (t *Tree) Keybinding(gui *Gui) {
 }
 
 func (t *Tree) SetEntries(path string) []*File {
-	files := GetFiles(path, t.searchWord, t.ignorecase)
+	files := GetFiles(path, t.searchWord, t.ignorecase, t.showHidden)
 
 	if len(files) == 0 {
 		return nil
@@ -444,7 +446,7 @@ func (t *Tree) AddNode(parent *tview.TreeNode, files []*File) {
 			n.SetColor(tcell.ColorDarkCyan)
 		}
 		if _, ok := t.expandInfo[f.PathName]; ok {
-			files := GetFiles(f.PathName, t.searchWord, t.ignorecase)
+			files := GetFiles(f.PathName, t.searchWord, t.ignorecase, t.showHidden)
 			if len(files) != 0 {
 				t.AddNode(n, files)
 			}

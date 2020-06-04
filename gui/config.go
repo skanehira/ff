@@ -25,6 +25,7 @@ type Config struct {
 	IgnoreCase bool           `yaml:"ignore_case"`
 	OpenCmd    string         `yaml:"open_cmd"`
 	EnableTree bool           `yaml:"enable_tree"`
+	ShowHidden bool           `yaml:"show_hidden"`
 }
 
 func DefaultConfig() Config {
@@ -42,5 +43,6 @@ func DefaultConfig() Config {
 		},
 		IgnoreCase: false,
 		EnableTree: false,
+		ShowHidden: false,
 	}
 }

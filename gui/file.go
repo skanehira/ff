@@ -28,7 +28,7 @@ type File struct {
 	IsDir      bool
 }
 
-func GetFiles(path, searchWord string, ignorecase bool) []*File {
+func GetFiles(path, searchWord string, ignorecase, showHidden bool) []*File {
 	var files []*File
 
 	entries, err := ioutil.ReadDir(path)
@@ -45,6 +45,9 @@ func GetFiles(path, searchWord string, ignorecase bool) []*File {
 		perm, owner, group string
 
 	for _, file := range entries {
+		if !showHidden && file.Name()[0] == '.' {
+			continue
+		}
 		var name, word string
 		if ignorecase {
 			name = strings.ToLower(file.Name())
