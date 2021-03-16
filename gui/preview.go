@@ -48,7 +48,7 @@ func (p *Preview) UpdateView(g *Gui, entry *File) {
 	} else {
 		text = p.dirEntry(entry.PathName)
 	}
-	g.App.QueueUpdateDraw(func() {
+	go g.App.QueueUpdateDraw(func() {
 		p.SetText(text).ScrollToBeginning()
 	})
 }

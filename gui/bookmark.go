@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
 	"github.com/skanehira/ff/system"
