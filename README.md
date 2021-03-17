@@ -109,11 +109,6 @@ The inmemory mode will save bookmark to memory, so if `ff` quit bookmarks will l
 If you runing `ff` in Vim's terminal and `$EDITOR` is `vim`,
 `ff` will use running Vim to edit file.
 
-## About executing command
-`ff` can executing command, but it can't use stdin, stdout, stderr.
-Example, if you run `vim` , `ff` will freeze.
-So, you only can executing command that doesn't use stdin, stdout, stderr.
-
 ## Keybinding
 ### path
 | key     | operation        |
