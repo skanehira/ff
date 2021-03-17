@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"log"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -54,6 +55,14 @@ func (p *Preview) UpdateView(g *Gui, entry *File) {
 }
 
 func (p *Preview) dirEntry(path string) string {
+	if _, err := exec.LookPath("tree"); err == nil {
+		out, err := exec.Command("tree", path).CombinedOutput()
+		if err != nil {
+			return err.Error()
+		}
+		return string(out)
+	}
+
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Println(err)
